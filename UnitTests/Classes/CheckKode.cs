@@ -1,14 +1,13 @@
 using System;
-using System.Collections.Generic;
 using TinySql.Attributes;
 
 namespace TinySql.Classes
 {	public partial class Checkkode
 {
-		[PK]
+		[Pk]
 		public Decimal  CheckGroup { get; set; }
 
-		[PK]
+		[Pk]
 		public Decimal  CheckID { get; set; }
 
 		public String  BeskrivelseDK { get; set; }

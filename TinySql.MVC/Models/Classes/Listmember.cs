@@ -1,14 +1,13 @@
 using System;
-using System.Collections.Generic;
 using TinySql.Attributes;
 
 namespace TinySql.MVC.Models
 {	public partial class Listmember
 {
-		[PK]
+		[Pk]
 		public Decimal  ListmemberID { get; set; }
 
-		[FK("Contact","ContactID","dbo","Contact_Listmember_ContactID")]
+		[Fk("Contact","ContactID","dbo","Contact_Listmember_ContactID")]
 		public Decimal  ContactID { get; set; }
 
 		public Decimal  CreatedBy { get; set; }
@@ -17,7 +16,7 @@ namespace TinySql.MVC.Models
 
 		public Nullable<DateTime>  LastUpdated { get; set; }
 
-		[FK("List","ListID","dbo","List_Listmember_ListID")]
+		[Fk("List","ListID","dbo","List_Listmember_ListID")]
 		public Decimal  ListID { get; set; }
 
 		public Decimal  ListmemberStatusID { get; set; }

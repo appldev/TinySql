@@ -10,16 +10,16 @@ namespace TinySql
 {
     public class SqlBuilder
     {
-        public static SqlBuilder Select(int? Top = null, bool Distinct = false)
+        public static SqlBuilder Select(int? top = null, bool distinct = false)
         {
             return new SqlBuilder()
             {
                 StatementType = StatementTypes.Select,
-                Top = Top,
-                Distinct = Distinct
+                Top = top,
+                Distinct = distinct
             };
         }
-        public static StoredProcedure StoredProcedure(string Name, string Schema = null)
+        public static StoredProcedure StoredProcedure(string name, string schema = null)
         {
 
             SqlBuilder builder = new SqlBuilder()
@@ -29,8 +29,8 @@ namespace TinySql
             builder.Procedure = new StoredProcedure()
             {
                 Builder = builder,
-                Name = Name,
-                Schema = Schema
+                Name = name,
+                Schema = schema
             };
             return builder.Procedure;
 
@@ -70,33 +70,33 @@ namespace TinySql
 
         public StoredProcedure Procedure { get; set; }
 
-        private static string _DefaultConnection = null;
+        private static string _defaultConnection = null;
 
         public static string DefaultConnection
         {
-            get { return _DefaultConnection; }
-            set { _DefaultConnection = value; }
+            get { return _defaultConnection; }
+            set { _defaultConnection = value; }
         }
 
-        private string _ConnectionString = null;
+        private string _connectionString = null;
 
         public string ConnectionString
         {
-            get { return _ConnectionString ?? DefaultConnection; }
-            set { _ConnectionString = value; }
+            get { return _connectionString ?? DefaultConnection; }
+            set { _connectionString = value; }
         }
 
         public object[] Format;
 
-        private MetadataDatabase _Metadata = null;
+        private MetadataDatabase _metadata = null;
         public MetadataDatabase Metadata
         {
             get
             {
-                MetadataDatabase mdb = _Metadata ?? this.Builder()._Metadata;
+                MetadataDatabase mdb = _metadata ?? this.Builder()._metadata;
                 return mdb ?? DefaultMetadata;
             }
-            set { _Metadata = value; }
+            set { _metadata = value; }
         }
 
         public static MetadataDatabase DefaultMetadata { get; set; }
@@ -104,36 +104,36 @@ namespace TinySql
 
         public TempTable SelectIntoTable { get; set; }
 
-        private ConcurrentDictionary<string, SqlBuilder> _SubQueries = new ConcurrentDictionary<string, SqlBuilder>();
+        private ConcurrentDictionary<string, SqlBuilder> _subQueries = new ConcurrentDictionary<string, SqlBuilder>();
         public ConcurrentDictionary<string, SqlBuilder> SubQueries
         {
-            get { return _SubQueries; }
-            set { _SubQueries = value; }
+            get { return _subQueries; }
+            set { _subQueries = value; }
         }
-        public SqlBuilder AddSubQuery(string Name, SqlBuilder Builder)
+        public SqlBuilder AddSubQuery(string name, SqlBuilder builder)
         {
-            if (Builder.StatementType != StatementTypes.Insert && Builder.StatementType != StatementTypes.Update)
+            if (builder.StatementType != StatementTypes.Insert && builder.StatementType != StatementTypes.Update)
             {
                 // Only set the parent builder for statements that share parameter declarations
-                Builder.ParentBuilder = this;
+                builder.ParentBuilder = this;
             }
-            return _SubQueries.AddOrUpdate(Name, Builder, (k, v) => { return Builder; });
+            return _subQueries.AddOrUpdate(name, builder, (k, v) => { return builder; });
 
         }
 
         public SqlBuilder ParentBuilder { get; set; }
 
-        private ConcurrentDictionary<string, string> Declarations = new ConcurrentDictionary<string, string>();
+        private ConcurrentDictionary<string, string> _declarations = new ConcurrentDictionary<string, string>();
 
         public SqlBuilder TopBuilder
         {
             get
             {
-                if (this.ParentBuilder == null)
+                if (ParentBuilder == null)
                 {
                     return this;
                 }
-                SqlBuilder sb = this.ParentBuilder;
+                SqlBuilder sb = ParentBuilder;
                 while (sb.ParentBuilder != null)
                 {
                     sb = sb.ParentBuilder;
@@ -142,17 +142,17 @@ namespace TinySql
             }
         }
 
-        internal bool AddDeclaration(string DeclarationName, string Body)
+        internal bool AddDeclaration(string declarationName, string body)
         {
-            return Declarations.TryAdd(DeclarationName, Body);
+            return _declarations.TryAdd(declarationName, body);
         }
 
-        private List<OrderBy> _OrderByClause = new List<OrderBy>();
+        private List<OrderBy> _orderByClause = new List<OrderBy>();
 
         public List<OrderBy> OrderByClause
         {
-            get { return _OrderByClause; }
-            set { _OrderByClause = value; }
+            get { return _orderByClause; }
+            set { _orderByClause = value; }
         }
 
         public string BuilderName { get; set; }
@@ -161,14 +161,14 @@ namespace TinySql
         {
             Initialize(null, null);
         }
-        public SqlBuilder(string ConnectionString)
+        public SqlBuilder(string connectionString)
         {
-            Initialize(ConnectionString, null);
+            Initialize(connectionString, null);
         }
 
-        public SqlBuilder(string ConnectionString, CultureInfo Culture)
+        public SqlBuilder(string connectionString, CultureInfo culture)
         {
-            Initialize(ConnectionString, Culture);
+            Initialize(connectionString, culture);
         }
 
 
@@ -179,34 +179,34 @@ namespace TinySql
             ConnectionString = connectionString;
         }
 
-        private static CacheItemPolicy _CachePolicy = new CacheItemPolicy() { AbsoluteExpiration = MemoryCache.InfiniteAbsoluteExpiration, SlidingExpiration = MemoryCache.NoSlidingExpiration };
+        private static CacheItemPolicy _cachePolicy = new CacheItemPolicy() { AbsoluteExpiration = ObjectCache.InfiniteAbsoluteExpiration, SlidingExpiration = ObjectCache.NoSlidingExpiration };
         public static CacheItemPolicy CachePolicy
         {
-            get { return SqlBuilder._CachePolicy; }
-            set { SqlBuilder._CachePolicy = value; }
+            get { return _cachePolicy; }
+            set { _cachePolicy = value; }
         }
 
 
-        public static bool CacheSqlBuilder(string Key, SqlBuilder Builder, CacheItemPolicy Policy = null)
+        public static bool CacheSqlBuilder(string key, SqlBuilder builder, CacheItemPolicy policy = null)
         {
-            CacheItem item = MemoryCache.Default.AddOrGetExisting(new CacheItem(Key, Builder), (Policy ?? CachePolicy));
+            CacheItem item = MemoryCache.Default.AddOrGetExisting(new CacheItem(key, builder), (policy ?? CachePolicy));
             return item.Value == null;
         }
-        public static SqlBuilder CacheSqlBuilder(string Key)
+        public static SqlBuilder CacheSqlBuilder(string key)
         {
-            CacheItem item = MemoryCache.Default.GetCacheItem(Key);
+            CacheItem item = MemoryCache.Default.GetCacheItem(key);
             return item != null ? (SqlBuilder)item.Value : null;
         }
 
 
-        public string ToSql(params object[] Format)
+        public string ToSql(params object[] format)
         {
-            if (Format == null || Format.Length == 0)
+            if (format == null || format.Length == 0)
             {
                 return ToSql();
             }
 
-            return string.Format(ToSql(), Format);
+            return string.Format(ToSql(), format);
         }
 
         public virtual string ToSql()
@@ -229,17 +229,17 @@ namespace TinySql
                     sql = DeleteSql();
                     break;
                 case StatementTypes.Procedure:
-                    sql = this.Procedure.ToSql();
+                    sql = Procedure.ToSql();
                     break;
                 default:
                     break;
             }
 
             // Post SQL
-            if (this.ParentBuilder == null)
+            if (ParentBuilder == null)
             {
                 // Top level, so write parameter declarations at the top
-                foreach (string par in Declarations.Values)
+                foreach (string par in _declarations.Values)
                 {
                     sb.AppendLine(par);
                 }
@@ -269,30 +269,30 @@ namespace TinySql
         private string InsertSql()
         {
             StringBuilder sb = new StringBuilder();
-            InsertIntoTable BaseTable = this.BaseTable() as InsertIntoTable;
+            InsertIntoTable baseTable = BaseTable() as InsertIntoTable;
             string set = "";
             string outputSelect = "";
-            SqlBuilder tb = this.TopBuilder;
-            foreach (ParameterField field in BaseTable.FieldList)
+            SqlBuilder tb = TopBuilder;
+            foreach (ParameterField field in baseTable.FieldList)
             {
                 tb.AddDeclaration(field.ParameterName, field.DeclareParameter());
                 set += field.SetParameter() + "\r\n";
             }
 
-            if (BaseTable.Output != null && BaseTable.Output.ParameterTable.FieldList.Count > 0)
+            if (baseTable.Output != null && baseTable.Output.ParameterTable.FieldList.Count > 0)
             {
-                tb.AddDeclaration(BaseTable.Output.ParameterName, BaseTable.Output.DeclareParameter());
-                outputSelect += BaseTable.Output.SetParameter() + "\r\n";
+                tb.AddDeclaration(baseTable.Output.ParameterName, baseTable.Output.DeclareParameter());
+                outputSelect += baseTable.Output.SetParameter() + "\r\n";
 
             }
 
             sb.AppendLine(set);
-            sb.AppendFormat(" INSERT  INTO {0}({1})\r\n", BaseTable.Alias, BaseTable.ToSql());
-            if (BaseTable.Output != null && BaseTable.Output.ParameterTable.FieldList.Count > 0)
+            sb.AppendFormat(" INSERT  INTO {0}({1})\r\n", baseTable.Alias, baseTable.ToSql());
+            if (baseTable.Output != null && baseTable.Output.ParameterTable.FieldList.Count > 0)
             {
-                sb.AppendFormat("OUTPUT  {0}\r\n", BaseTable.Output.ToSql());
+                sb.AppendFormat("OUTPUT  {0}\r\n", baseTable.Output.ToSql());
             }
-            sb.AppendFormat("VALUES({0})\r\n", BaseTable.FieldParameters());
+            sb.AppendFormat("VALUES({0})\r\n", baseTable.FieldParameters());
             if (!string.IsNullOrEmpty(outputSelect))
             {
                 sb.AppendLine(outputSelect);
@@ -301,7 +301,7 @@ namespace TinySql
 
         }
 
-        public void CleanSelectList(bool RemoveDublicateFields = false)
+        public void CleanSelectList(bool removeDublicateFields = false)
         {
             List<string> clean = new List<string>();
             int idx = 0;
@@ -314,7 +314,7 @@ namespace TinySql
                 }
                 else
                 {
-                    if (RemoveDublicateFields)
+                    if (removeDublicateFields)
                     {
                         f.Table.FieldList.Remove(f);
                     }
@@ -392,7 +392,7 @@ namespace TinySql
             //
             // Post SQL stuff
             // 
-            if (this.SelectIntoTable != null && this.SelectIntoTable.OutputTable)
+            if (SelectIntoTable != null && SelectIntoTable.OutputTable)
             {
                 sb.AppendFormat("SELECT  {0} FROM {1}\r\n", SelectIntoTable.ToSql(), SelectIntoTable.ReferenceName);
                 if (SelectIntoTable.OrderByClause.Count > 0)
@@ -409,9 +409,9 @@ namespace TinySql
             //
             // Sub Queries
             //
-            if (_SubQueries.Count > 0)
+            if (_subQueries.Count > 0)
             {
-                foreach (SqlBuilder sub in _SubQueries.Values)
+                foreach (SqlBuilder sub in _subQueries.Values)
                 {
                     sb.AppendFormat("\r\n-- Sub Query\r\n{0}\r\n", sub.ToSql(Format));
                 }
@@ -423,34 +423,34 @@ namespace TinySql
         private string UpdateSql()
         {
             StringBuilder sb = new StringBuilder();
-            UpdateTable BaseTable = this.BaseTable() as UpdateTable;
+            UpdateTable baseTable = BaseTable() as UpdateTable;
             string declare = "";
             string set = "";
             string outputSelect = "";
-            SqlBuilder tb = this.TopBuilder;
+            SqlBuilder tb = TopBuilder;
 
-            foreach (ParameterField field in BaseTable.FieldList.OfType<ParameterField>())
+            foreach (ParameterField field in baseTable.FieldList.OfType<ParameterField>())
             {
                 tb.AddDeclaration(field.ParameterName, field.DeclareParameter());
                 set += field.SetParameter() + "\r\n";
             }
-            if (BaseTable.Output != null && BaseTable.Output.ParameterTable.FieldList.Count > 0)
+            if (baseTable.Output != null && baseTable.Output.ParameterTable.FieldList.Count > 0)
             {
-                tb.AddDeclaration(BaseTable.Output.ParameterName, BaseTable.Output.DeclareParameter());
-                outputSelect += BaseTable.Output.SetParameter() + "\r\n";
+                tb.AddDeclaration(baseTable.Output.ParameterName, baseTable.Output.DeclareParameter());
+                outputSelect += baseTable.Output.SetParameter() + "\r\n";
 
             }
 
             sb.AppendLine(declare);
             sb.AppendLine(set);
 
-            sb.AppendFormat("UPDATE  {0}\r\n", BaseTable.Name);
-            sb.AppendFormat("   SET  {0}\r\n", BaseTable.ToSql());
-            if (BaseTable.Output != null && BaseTable.Output.ParameterTable.FieldList.Count > 0)
+            sb.AppendFormat("UPDATE  {0}\r\n", baseTable.Name);
+            sb.AppendFormat("   SET  {0}\r\n", baseTable.ToSql());
+            if (baseTable.Output != null && baseTable.Output.ParameterTable.FieldList.Count > 0)
             {
-                sb.AppendFormat("OUTPUT  {0}\r\n", BaseTable.Output.ToSql());
+                sb.AppendFormat("OUTPUT  {0}\r\n", baseTable.Output.ToSql());
             }
-            sb.AppendFormat("  FROM  {0}\r\n", BaseTable.ReferenceName);
+            sb.AppendFormat("  FROM  {0}\r\n", baseTable.ReferenceName);
             foreach (Join j in JoinConditions)
             {
                 sb.AppendFormat("{0}\r\n", j.ToSql());
@@ -477,23 +477,23 @@ namespace TinySql
             Procedure = 6
         }
 
-        private System.Globalization.CultureInfo _Culture = null;
+        private CultureInfo _culture = null;
 
-        public System.Globalization.CultureInfo Culture
+        public CultureInfo Culture
         {
-            get { return _Culture ?? DefaultCulture; }
-            set { _Culture = value; }
+            get { return _culture ?? DefaultCulture; }
+            set { _culture = value; }
         }
-        private static CultureInfo _DefaultCulture = System.Globalization.CultureInfo.GetCultureInfo(1033);
+        private static CultureInfo _defaultCulture = CultureInfo.GetCultureInfo(1033);
         public static CultureInfo DefaultCulture
         {
             get
             {
-                return _DefaultCulture;
+                return _defaultCulture;
             }
             set
             {
-                _DefaultCulture = value;
+                _defaultCulture = value;
             }
         }
 

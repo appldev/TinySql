@@ -1,14 +1,9 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Linq;
-using System.Web;
 using System.Web.Mvc;
-using TinySql.MVC.Models;
 using TinySql.Serialization;
-using TinySql;
 using TinySql.Metadata;
 using TinySql.UI;
-using System.Collections.Specialized;
 
 namespace TinySql.MVC.Controllers
 {
@@ -26,7 +21,7 @@ namespace TinySql.MVC.Controllers
             MetadataTable table = SqlBuilder.DefaultMetadata.FindTable(Table);
             // SqlBuilder builder = table.ToSqlBuilder(ListType != ListTypes.Custom ? ListType.ToString() : ListName);
             SqlBuilder builder = table.ToSqlBuilder("");
-            builder.BaseTable().WithMetadata().WherePrimaryKey(new object[] { (object)Id });
+            builder.BaseTable().WithMetadata().WherePrimaryKey(new object[] { Id });
 
             ResultTable result = builder.Execute();
             

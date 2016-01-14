@@ -2,8 +2,6 @@
 using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using TinySql.Metadata;
 
 namespace TinySql.UI
@@ -14,14 +12,14 @@ namespace TinySql.UI
         Mobile = 2,
     }
 
-    public enum FormLayouts : int
+    public enum FormLayouts
     {
         Vertical = 1,
         Horizontal = 2,
         Inline = 3
     }
 
-    public enum SectionLayouts : int
+    public enum SectionLayouts
     {
         Vertical = 1,
         VerticalTwoColumns = 2,
@@ -29,7 +27,7 @@ namespace TinySql.UI
         HorizontalTwoColumns = 4,
     }
 
-    public enum FieldTypes : int
+    public enum FieldTypes
     {
         Input = 1,
         Checkbox = 2,
@@ -39,7 +37,7 @@ namespace TinySql.UI
         TextArea = 6
     }
 
-    public enum LookupSources : int
+    public enum LookupSources
     {
         NameValueCollection = 1,
         SqlBuilder = 2

@@ -1,14 +1,13 @@
 using System;
-using System.Collections.Generic;
 using TinySql.Attributes;
 
 namespace TinySql.MVC.Models
 {	public partial class Contact
 {
-		[PK]
+		[Pk]
 		public Decimal  ContactID { get; set; }
 
-		[FK("Account","AccountID","dbo","Account_AccountID_Contact_AcountID")]
+		[Fk("Account","AccountID","dbo","Account_AccountID_Contact_AcountID")]
 		public Nullable<Decimal>  AccountID { get; set; }
 
 		public Decimal  CreatedBy { get; set; }
@@ -17,10 +16,10 @@ namespace TinySql.MVC.Models
 
 		public Decimal  DatasourceID { get; set; }
 
-		[FK("Checkkode","CheckID","dbo","FK_Contact_JobfunctionID_Checkkode")]
+		[Fk("Checkkode","CheckID","dbo","FK_Contact_JobfunctionID_Checkkode")]
 		public Decimal  JobfunctionID { get; set; }
 
-		[FK("Checkkode","CheckID","dbo","FK_Contact_JobpositionID_Checkkode")]
+		[Fk("Checkkode","CheckID","dbo","FK_Contact_JobpositionID_Checkkode")]
 		public Decimal  JobpositionID { get; set; }
 
 		public String  Mobile { get; set; }
@@ -37,7 +36,7 @@ namespace TinySql.MVC.Models
 
 		public String  PrivateEmail { get; set; }
 
-		[FK("State","StateID","dbo","RefState125")]
+		[Fk("State","StateID","dbo","RefState125")]
 		public Decimal  StateID { get; set; }
 
 		public String  Telephone { get; set; }

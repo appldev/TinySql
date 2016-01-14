@@ -1,11 +1,10 @@
 using System;
-using System.Collections.Generic;
 using TinySql.Attributes;
 
 namespace TinySql.MVC.Models
 {	public partial class SystemUser
 {
-		[PK]
+		[Pk]
 		public Decimal  SystemUserID { get; set; }
 
 		public Decimal  CreatedBy { get; set; }
@@ -28,7 +27,7 @@ namespace TinySql.MVC.Models
 
 		public String  Navn { get; set; }
 
-		[FK("Organisation","OrganisationsID","dbo","RefOrganisation51")]
+		[Fk("Organisation","OrganisationsID","dbo","RefOrganisation51")]
 		public Decimal  OrganisationsID { get; set; }
 
 		public String  Password { get; set; }

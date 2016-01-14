@@ -1,11 +1,10 @@
 using System;
-using System.Collections.Generic;
 using TinySql.Attributes;
 
 namespace TinySql.Classes
 {	public partial class Account
 {
-		[PK]
+		[Pk]
 		public Decimal  AccountID { get; set; }
 
 		public Decimal  AccountTypeID { get; set; }
@@ -36,7 +35,7 @@ namespace TinySql.Classes
 
 		public String  PostalCode { get; set; }
 
-		[FK("State","StateID","dbo","State_Account_StateID")]
+		[Fk("State","StateID","dbo","State_Account_StateID")]
 		public Decimal  StateID { get; set; }
 
 		public String  Telefax { get; set; }

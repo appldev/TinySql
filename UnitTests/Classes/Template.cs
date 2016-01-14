@@ -1,6 +1,4 @@
 using System;
-using System.Collections.Generic;
-using TinySql.Attributes;
 
 namespace TinySql.Classes
 {	public partial class Template

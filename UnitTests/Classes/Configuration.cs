@@ -1,11 +1,10 @@
 using System;
-using System.Collections.Generic;
 using TinySql.Attributes;
 
 namespace TinySql.Classes
 {	public partial class Configuration
 {
-		[PK]
+		[Pk]
 		public String  ConfigName { get; set; }
 
 		public String  ConfigValue { get; set; }

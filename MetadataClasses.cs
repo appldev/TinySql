@@ -11,7 +11,7 @@ namespace TinySql.Metadata
     [Serializable]
     public class MetadataDatabase
     {
-        public Guid ID = Guid.NewGuid();
+        public Guid Id = Guid.NewGuid();
         public string Name { get; set; }
         public string Server { get; set; }
         public SqlBuilder Builder { get; set; }
@@ -23,12 +23,12 @@ namespace TinySql.Metadata
         // public ConcurrentDictionary<string, List<int>> InversionKeys = new ConcurrentDictionary<string, List<int>>();
 
 
-        public MetadataTable this[string TableName]
+        public MetadataTable this[string tableName]
         {
             get
             {
                 MetadataTable table;
-                if (Tables.TryGetValue(TableName, out table))
+                if (Tables.TryGetValue(tableName, out table))
                 {
                     return table;
                 }
@@ -39,19 +39,19 @@ namespace TinySql.Metadata
             }
         }
 
-        public MetadataTable FindTable(string Name, StringComparison CompareOption = StringComparison.OrdinalIgnoreCase)
+        public MetadataTable FindTable(string name, StringComparison compareOption = StringComparison.OrdinalIgnoreCase)
         {
             MetadataTable mt = null;
-            string Schema = null;
-            if (!Name.Contains('.'))
+            string schema = null;
+            if (!name.Contains('.'))
             {
-                Schema = "dbo.";
+                schema = "dbo.";
             }
-            if (Tables.TryGetValue(Schema + Name, out mt))
+            if (Tables.TryGetValue(schema + name, out mt))
             {
                 return mt;
             }
-            string[] keys = Tables.Keys.Where(x => x.EndsWith(Name, CompareOption)).ToArray();
+            string[] keys = Tables.Keys.Where(x => x.EndsWith(name, compareOption)).ToArray();
             if (keys.Length != 1)
             {
                 return null;
@@ -69,7 +69,7 @@ namespace TinySql.Metadata
         {
 
         }
-        public int ID { get; set; }
+        public int Id { get; set; }
         //public MetadataDatabase Parent { get; set; }
         public string Schema { get; set; }
         public string Name { get; set; }
@@ -84,12 +84,12 @@ namespace TinySql.Metadata
 
         
 
-        public MetadataColumn this[string ColumnName]
+        public MetadataColumn this[string columnName]
         {
             get
             {
                 MetadataColumn column;
-                if (Columns.TryGetValue(ColumnName, out column))
+                if (Columns.TryGetValue(columnName, out column))
                 {
                     return column;
                 }
@@ -100,55 +100,55 @@ namespace TinySql.Metadata
             }
         }
 
-        private ConcurrentDictionary<string, MetadataColumn> _Columns = new ConcurrentDictionary<string, MetadataColumn>();
+        private ConcurrentDictionary<string, MetadataColumn> _columns = new ConcurrentDictionary<string, MetadataColumn>();
 
         public ConcurrentDictionary<string, MetadataColumn> Columns
         {
-            get { return _Columns; }
-            set { _Columns = value; }
+            get { return _columns; }
+            set { _columns = value; }
         }
 
 
         #region Extended Properties
 
-        private ConcurrentDictionary<int, string> _DisplayNames = new ConcurrentDictionary<int, string>();
+        private ConcurrentDictionary<int, string> _displayNames = new ConcurrentDictionary<int, string>();
 
         public ConcurrentDictionary<int, string> DisplayNames
         {
-            get { return _DisplayNames; }
-            set { _DisplayNames = value; }
+            get { return _displayNames; }
+            set { _displayNames = value; }
         }
 
         public string DisplayName
         {
             get
             {
-                return this.GetDisplayName(SqlBuilder.DefaultCulture.LCID);
+                return GetDisplayName(SqlBuilder.DefaultCulture.LCID);
             }
         }
-        public string GetDisplayName(int LCID)
+        public string GetDisplayName(int lcid)
         {
             string value;
-            if (_DisplayNames.TryGetValue(SqlBuilder.DefaultCulture.LCID, out value))
+            if (_displayNames.TryGetValue(SqlBuilder.DefaultCulture.LCID, out value))
             {
                 return value;
             }
-            return this.Name;
+            return Name;
         }
 
-        private string _TitleColumn = null;
+        private string _titleColumn = null;
         public string TitleColumn
         {
-            get { return _TitleColumn; }
-            set { _TitleColumn = value; }
+            get { return _titleColumn; }
+            set { _titleColumn = value; }
         }
 
-        private ConcurrentDictionary<string, List<string>> _ListDefinitions = new ConcurrentDictionary<string,List<string>>();
+        private ConcurrentDictionary<string, List<string>> _listDefinitions = new ConcurrentDictionary<string,List<string>>();
 
         public ConcurrentDictionary<string, List<string>> ListDefinitions
         {
-            get { return _ListDefinitions; }
-            set { _ListDefinitions = value; }
+            get { return _listDefinitions; }
+            set { _listDefinitions = value; }
         }
         
 
@@ -164,15 +164,15 @@ namespace TinySql.Metadata
             }
         }
 
-        public IEnumerable<MetadataForeignKey> FindForeignKeys(MetadataColumn Column, string ReferencedTable = null)
+        public IEnumerable<MetadataForeignKey> FindForeignKeys(MetadataColumn column, string referencedTable = null)
         {
-            foreach (MetadataForeignKey FK in this.ForeignKeys.Values)
+            foreach (MetadataForeignKey fk in ForeignKeys.Values)
             {
-                if (FK.ColumnReferences.Select(x => x.Column).Any(x => x.Equals(Column)))
+                if (fk.ColumnReferences.Select(x => x.Column).Any(x => x.Equals(column)))
                 {
-                    if (ReferencedTable == null || FK.ReferencedTable.Equals(ReferencedTable, StringComparison.OrdinalIgnoreCase))
+                    if (referencedTable == null || fk.ReferencedTable.Equals(referencedTable, StringComparison.OrdinalIgnoreCase))
                     {
-                        yield return FK;
+                        yield return fk;
                     }
                 }
             }
@@ -184,7 +184,7 @@ namespace TinySql.Metadata
     [Serializable]
     public class MetadataForeignKey
     {
-        public int ID { get; set; }
+        public int Id { get; set; }
 
         public MetadataTable Parent { get; set; }
         public MetadataDatabase Database { get; set; }
@@ -195,12 +195,12 @@ namespace TinySql.Metadata
         public string ReferencedTable { get; set; }
         public string ReferencedKey { get; set; }
 
-        private bool _IsVirtual = false;
+        private bool _isVirtual = false;
 
         public bool IsVirtual
         {
-            get { return _IsVirtual; }
-            set { _IsVirtual = value; }
+            get { return _isVirtual; }
+            set { _isVirtual = value; }
         }
 
     }
@@ -221,7 +221,7 @@ namespace TinySql.Metadata
     [Serializable]
     public class Key
     {
-        public int ID { get; set; }
+        public int Id { get; set; }
 
         public MetadataTable Parent { get; set; }
         public MetadataDatabase Database { get; set; }
@@ -236,10 +236,10 @@ namespace TinySql.Metadata
 
     public class ForeignKeyCollection : List<MetadataForeignKey> //  IEnumerable<MetadataForeignKey>
     {
-        public void AddKey(MetadataForeignKey Value, string InversionKey)
+        public void AddKey(MetadataForeignKey value, string inversionKey)
         {
-            this.Add(Value);
-            List<int> keys = new List<int>(new int[] { Value.ID });
+            Add(value);
+            List<int> keys = new List<int>(new int[] { value.Id });
             //this.Database.InversionKeys.AddOrUpdate(InversionKey, keys, (key, existing) =>
             //{
             //    existing.Add(Value.ID);
@@ -272,7 +272,7 @@ namespace TinySql.Metadata
     [Serializable]
     public class MetadataColumn
     {
-        public int ID { get; set; }
+        public int Id { get; set; }
         public MetadataTable Parent { get; set; }
         //public MetadataDatabase Database {get; set;}
 
@@ -281,48 +281,48 @@ namespace TinySql.Metadata
         public SqlDbType SqlDataType { get; set; }
         public int Length { get; set; }
 
-        private int _Scale = -1;
+        private int _scale = -1;
 
         public int Scale
         {
-            get { return _Scale; }
-            set { _Scale = value; }
+            get { return _scale; }
+            set { _scale = value; }
         }
 
-        private int _Precision = -1;
+        private int _precision = -1;
 
         public int Precision
         {
-            get { return _Precision; }
-            set { _Precision = value; }
+            get { return _precision; }
+            set { _precision = value; }
         }
-        private string _DataTypeName;
+        private string _dataTypeName;
         public string DataTypeName
         {
-            get { return _DataTypeName; }
+            get { return _dataTypeName; }
             set
             {
-                _DataTypeName = value;
-                if (_DataType == null)
+                _dataTypeName = value;
+                if (_dataType == null)
                 {
-                    if (!string.IsNullOrEmpty(_DataTypeName))
+                    if (!string.IsNullOrEmpty(_dataTypeName))
                     {
-                        _DataType = Type.GetType(_DataTypeName);
+                        _dataType = Type.GetType(_dataTypeName);
                     }
                     
                 }
             }
         }
 
-        private Type _DataType = null;
+        private Type _dataType = null;
         [XmlIgnore]
         public Type DataType
         {
-            get { return _DataType; }
+            get { return _dataType; }
             set
             {
-                _DataType = value;
-                DataTypeName = _DataType != null ? _DataType.FullName : "Virtual";
+                _dataType = value;
+                DataTypeName = _dataType != null ? _dataType.FullName : "Virtual";
             }
         }
 
@@ -350,37 +350,37 @@ namespace TinySql.Metadata
 
         #region Extended Properties
         
-        private ConcurrentDictionary<int, string> _DisplayNames = new ConcurrentDictionary<int, string>();
+        private ConcurrentDictionary<int, string> _displayNames = new ConcurrentDictionary<int, string>();
 
         public ConcurrentDictionary<int, string> DisplayNames
         {
-            get { return _DisplayNames; }
-            set { _DisplayNames = value; }
+            get { return _displayNames; }
+            set { _displayNames = value; }
         }
 
         public string DisplayName
         {
             get
             {
-                return this.GetDisplayName(SqlBuilder.DefaultCulture.LCID);
+                return GetDisplayName(SqlBuilder.DefaultCulture.LCID);
             }
         }
-        public string GetDisplayName(int LCID)
+        public string GetDisplayName(int lcid)
         {
             string value;
-            if (_DisplayNames.TryGetValue(SqlBuilder.DefaultCulture.LCID, out value))
+            if (_displayNames.TryGetValue(SqlBuilder.DefaultCulture.LCID, out value))
             {
                 return value;
             }
-            return this.Name;
+            return Name;
         }
 
-        private string[] _IncludeColumns = null;
+        private string[] _includeColumns = null;
 
         public string[] IncludeColumns
         {
-            get { return _IncludeColumns; }
-            set { _IncludeColumns = value; }
+            get { return _includeColumns; }
+            set { _includeColumns = value; }
         }
 
         
@@ -390,11 +390,11 @@ namespace TinySql.Metadata
         public void PopulateField<T>(T field) where T : class
         {
             Field f = field as Field;
-            f.Name = this.Name;
-            f.MaxLength = this.Length;
-            f.Scale = this.Scale;
-            f.Precision = this.Precision;
-            f.SqlDataType = this.SqlDataType;
+            f.Name = Name;
+            f.MaxLength = Length;
+            f.Scale = Scale;
+            f.Precision = Precision;
+            f.SqlDataType = SqlDataType;
             
         }
 

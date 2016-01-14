@@ -1,11 +1,10 @@
 using System;
-using System.Collections.Generic;
 using TinySql.Attributes;
 
 namespace TinySql.Classes
 {	public partial class ApplicationSettings
 {
-		[PK]
+		[Pk]
 		public Decimal  ApplicationSettingsID { get; set; }
 
 		public Decimal  CreatedBy { get; set; }

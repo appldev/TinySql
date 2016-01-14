@@ -1,11 +1,10 @@
 using System;
-using System.Collections.Generic;
 using TinySql.Attributes;
 
 namespace TinySql.MVC.Models
 {	public partial class Campaign
 {
-		[PK]
+		[Pk]
 		public Decimal  CampaignID { get; set; }
 
 		public Nullable<Int32>  Bounced { get; set; }

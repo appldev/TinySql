@@ -1,11 +1,10 @@
 using System;
-using System.Collections.Generic;
 using TinySql.Attributes;
 
 namespace TinySql.MVC.Models
 {	public partial class sysdiagrams
 {
-		[PK]
+		[Pk]
 		public Int32  diagram_id { get; set; }
 
 		public Byte[]  definition { get; set; }

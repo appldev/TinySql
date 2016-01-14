@@ -1,11 +1,10 @@
 using System;
-using System.Collections.Generic;
 using TinySql.Attributes;
 
 namespace TinySql.MVC.Models
 {	public partial class UserSettings
 {
-		[PK]
+		[Pk]
 		public Decimal  UserSettingsID { get; set; }
 
 		public Decimal  CreatedBy { get; set; }
@@ -18,7 +17,7 @@ namespace TinySql.MVC.Models
 
 		public DateTime  ModifiedOn { get; set; }
 
-		[FK("SystemUser","SystemUserID","dbo","RefSystemUser129")]
+		[Fk("SystemUser","SystemUserID","dbo","RefSystemUser129")]
 		public Decimal  SystemUserID { get; set; }
 
 		public String  Value { get; set; }

@@ -1,14 +1,13 @@
 using System;
-using System.Collections.Generic;
 using TinySql.Attributes;
 
 namespace TinySql.MVC.Models
 {	public partial class Attachment
 {
-		[PK]
+		[Pk]
 		public Decimal  AttachmentID { get; set; }
 
-		[FK("Activity","ActivityID","dbo","Activity_Attachment_ActivityID")]
+		[Fk("Activity","ActivityID","dbo","Activity_Attachment_ActivityID")]
 		public Nullable<Decimal>  ActivityID { get; set; }
 
 		public Decimal  CreatedBy { get; set; }

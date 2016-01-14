@@ -3,7 +3,6 @@ using System.Linq;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using TinySql;
 using System.Collections.Generic;
-using Microsoft.CSharp;
 
 namespace UnitTests
 {

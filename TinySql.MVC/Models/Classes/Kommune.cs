@@ -1,11 +1,10 @@
 using System;
-using System.Collections.Generic;
 using TinySql.Attributes;
 
 namespace TinySql.MVC.Models
 {	public partial class Kommune
 {
-		[PK]
+		[Pk]
 		public Decimal  KommuneID { get; set; }
 
 		public Decimal  CreatedBy { get; set; }
@@ -20,7 +19,7 @@ namespace TinySql.MVC.Models
 
 		public DateTime  ModifiedOn { get; set; }
 
-		[FK("Region","RegionID","dbo","Region_Kommune_RegionID")]
+		[Fk("Region","RegionID","dbo","Region_Kommune_RegionID")]
 		public Decimal  RegionID { get; set; }
 
 	}

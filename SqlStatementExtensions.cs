@@ -10,14 +10,14 @@ namespace TinySql
     public class TableHelper<TModel>
     {
         public TModel Model;
-        public Table table;
+        public Table Table;
     }
     public static class SqlStatementExtensions
     {
         #region Support functions
-        public static Table FindTable(this SqlBuilder builder, string TableNameOrAlias, string Schema = null)
+        public static Table FindTable(this SqlBuilder builder, string tableNameOrAlias, string schema = null)
         {
-            Table found = builder.Tables.FirstOrDefault(x => x.Name.Equals(TableNameOrAlias, StringComparison.InvariantCultureIgnoreCase) || (x.Alias != null && x.Alias.Equals(TableNameOrAlias, StringComparison.InvariantCultureIgnoreCase)));
+            Table found = builder.Tables.FirstOrDefault(x => x.Name.Equals(tableNameOrAlias, StringComparison.InvariantCultureIgnoreCase) || (x.Alias != null && x.Alias.Equals(tableNameOrAlias, StringComparison.InvariantCultureIgnoreCase)));
             if (found != null)
             {
                 return found;
@@ -27,22 +27,22 @@ namespace TinySql
                 SqlBuilder b = builder.ParentBuilder;
                 while (b != null && found == null)
                 {
-                    found = builder.Tables.FirstOrDefault(x => x.Name.Equals(TableNameOrAlias, StringComparison.InvariantCultureIgnoreCase) || (x.Alias != null && x.Alias.Equals(TableNameOrAlias, StringComparison.InvariantCultureIgnoreCase)));
+                    found = builder.Tables.FirstOrDefault(x => x.Name.Equals(tableNameOrAlias, StringComparison.InvariantCultureIgnoreCase) || (x.Alias != null && x.Alias.Equals(tableNameOrAlias, StringComparison.InvariantCultureIgnoreCase)));
                     b = b.ParentBuilder;
                 }
             }
             return found;
         }
 
-        public static Field FindField(this Table table, string NameOrAlias)
+        public static Field FindField(this Table table, string nameOrAlias)
         {
-            return table.FieldList.FirstOrDefault(x => x.Name.Equals(NameOrAlias, StringComparison.OrdinalIgnoreCase) || (x.Alias != null && x.Alias.Equals(NameOrAlias, StringComparison.OrdinalIgnoreCase)));
+            return table.FieldList.FirstOrDefault(x => x.Name.Equals(nameOrAlias, StringComparison.OrdinalIgnoreCase) || (x.Alias != null && x.Alias.Equals(nameOrAlias, StringComparison.OrdinalIgnoreCase)));
         }
 
         public static Table Property<TModel, TProperty>(this TableHelper<TModel> helper, Expression<Func<TModel, TProperty>> expression)
         {
             Expression exp = expression.ReduceExtensions();
-            return helper.table;
+            return helper.Table;
         }
 
 
@@ -50,24 +50,24 @@ namespace TinySql
 
         #region Stored Procedures
 
-        public static StoredProcedure Parameter(this StoredProcedure proc, string Name, SqlDbType SqlDataType, object Value, Type DataType, int MaxLength = -1, int Scale = -1, int Precision = -1, bool IsOutput = false, string TableName = null, string FieldName = null)
+        public static StoredProcedure Parameter(this StoredProcedure proc, string name, SqlDbType sqlDataType, object value, Type dataType, int maxLength = -1, int scale = -1, int precision = -1, bool isOutput = false, string tableName = null, string fieldName = null)
         {
             ParameterField p = new ParameterField()
             {
                 Builder = proc.Builder,
-                Name = Name,
-                ParameterName = "@" + Name,
-                MaxLength = MaxLength,
-                Scale = Scale,
-                Precision = Precision,
-                SqlDataType = SqlDataType,
-                DataType = DataType,
-                Value = Value,
-                IsOutput = IsOutput
+                Name = name,
+                ParameterName = "@" + name,
+                MaxLength = maxLength,
+                Scale = scale,
+                Precision = precision,
+                SqlDataType = sqlDataType,
+                DataType = dataType,
+                Value = value,
+                IsOutput = isOutput
             };
-            if (!string.IsNullOrEmpty(TableName) && p.TryPopulateField(TableName,FieldName))
+            if (!string.IsNullOrEmpty(tableName) && p.TryPopulateField(tableName,fieldName))
             {
-                p.Name = Name;
+                p.Name = name;
             }
             proc.Parameters.Add(p);
             return proc;
@@ -79,21 +79,21 @@ namespace TinySql
         }
 
 
-        public static StoredProcedure Parameter<T>(this StoredProcedure proc, string TableName, string Name, T Value, string FromField = null)
+        public static StoredProcedure Parameter<T>(this StoredProcedure proc, string tableName, string name, T value, string fromField = null)
         {
-            return Parameter(proc, Name, SqlDbType.VarChar, Value, typeof(T),TableName: TableName,FieldName: FromField);
+            return Parameter(proc, name, SqlDbType.VarChar, value, typeof(T),tableName: tableName,fieldName: fromField);
         }
 
-        public static StoredProcedure Parameter<T>(this StoredProcedure proc, string Name, SqlDbType SqlDataType, T Value, int MaxLength = -1, int Scale = -1, int Precision = -1)
+        public static StoredProcedure Parameter<T>(this StoredProcedure proc, string name, SqlDbType sqlDataType, T value, int maxLength = -1, int scale = -1, int precision = -1)
         {
 
-            return Parameter(proc, Name, SqlDataType, Value, typeof(T), MaxLength, Scale, Precision);
+            return Parameter(proc, name, sqlDataType, value, typeof(T), maxLength, scale, precision);
         }
 
-        public static StoredProcedure Output<T>(this StoredProcedure proc, string Name, SqlDbType SqlDataType, int MaxLength = -1, int Scale = -1, int Precision = -1)
+        public static StoredProcedure Output<T>(this StoredProcedure proc, string name, SqlDbType sqlDataType, int maxLength = -1, int scale = -1, int precision = -1)
         {
 
-            return Parameter(proc, Name, SqlDataType, null, typeof(T), MaxLength, Scale, Precision, true);
+            return Parameter(proc, name, sqlDataType, null, typeof(T), maxLength, scale, precision, true);
         }
 
 
@@ -102,7 +102,7 @@ namespace TinySql
 
         #region Update statement
 
-        public static UpdateTable Table(this SqlBuilder builder, string TableName, string Schema = null)
+        public static UpdateTable Table(this SqlBuilder builder, string tableName, string schema = null)
         {
             if (builder.Tables.Count > 0 && builder.BaseTable() is UpdateTable)
             {
@@ -110,58 +110,58 @@ namespace TinySql
             }
             else
             {
-                UpdateTable t = new UpdateTable(builder, TableName, Schema);
+                UpdateTable t = new UpdateTable(builder, tableName, schema);
                 builder.Tables.Add(t);
                 return t;
             }
         }
 
-        public static UpdateTable Set(this UpdateTable table, string FieldName, object Value, SqlDbType SqlDataType, Type DataType, int MaxLength = -1, int Precision = -1, int Scale = -1)
+        public static UpdateTable Set(this UpdateTable table, string fieldName, object value, SqlDbType sqlDataType, Type dataType, int maxLength = -1, int precision = -1, int scale = -1)
         {
             table.FieldList.Add(new ParameterField()
             {
                 Builder = table.Builder,
-                Name = FieldName,
-                ParameterName = "@" + FieldName,
-                MaxLength = MaxLength,
-                Precision = Precision,
-                Scale = Scale,
-                SqlDataType = SqlDataType,
-                DataType = DataType,
-                Value = Value,
+                Name = fieldName,
+                ParameterName = "@" + fieldName,
+                MaxLength = maxLength,
+                Precision = precision,
+                Scale = scale,
+                SqlDataType = sqlDataType,
+                DataType = dataType,
+                Value = value,
                 Table = table
 
             }.PopulateField());
             return table;
         }
 
-        public static UpdateTable Set<T>(this UpdateTable table, string FieldName, T Value, SqlDbType DataType, int MaxLength = -1, int Scale = -1)
+        public static UpdateTable Set<T>(this UpdateTable table, string fieldName, T value, SqlDbType dataType, int maxLength = -1, int scale = -1)
         {
             table.FieldList.Add(new ParameterField<T>()
             {
                 Builder = table.Builder,
-                Name = FieldName,
-                ParameterName = "@" + FieldName,
-                MaxLength = MaxLength,
-                Scale = Scale,
-                SqlDataType = DataType,
-                FieldValue = Value,
+                Name = fieldName,
+                ParameterName = "@" + fieldName,
+                MaxLength = maxLength,
+                Scale = scale,
+                SqlDataType = dataType,
+                FieldValue = value,
                 Table = table,
-                DataType = Value.GetType()
+                DataType = value.GetType()
             }.PopulateField());
             return table;
         }
 
-        public static TableParameterField Output(this UpdateTable table, string ParameterName = null)
+        public static TableParameterField Output(this UpdateTable table, string parameterName = null)
         {
-            if (ParameterName == null)
+            if (parameterName == null)
             {
-                ParameterName = "output" + table.Name.Replace(".", "");
+                parameterName = "output" + table.Name.Replace(".", "");
             }
             table.Output = new TableParameterField()
             {
-                Name = ParameterName,
-                ParameterName = "@" + ParameterName,
+                Name = parameterName,
+                ParameterName = "@" + parameterName,
                 ParameterTable = new Table(table.Builder, "inserted", ""),
                 Builder = table.Builder,
                 Table = table
@@ -183,17 +183,17 @@ namespace TinySql
             }
             return table;
         }
-        public static TableParameterField Column(this TableParameterField table, string FieldName, SqlDbType DataType, int MaxLength = -1, int Precision = -1, int Scale = -1)
+        public static TableParameterField Column(this TableParameterField table, string fieldName, SqlDbType dataType, int maxLength = -1, int precision = -1, int scale = -1)
         {
 
             table.ParameterTable.FieldList.Add(new Field()
             {
                 Builder = table.Builder,
-                Name = FieldName,
-                MaxLength = MaxLength,
-                Precision = Precision,
-                Scale = Scale,
-                SqlDataType = DataType,
+                Name = fieldName,
+                MaxLength = maxLength,
+                Precision = precision,
+                Scale = scale,
+                SqlDataType = dataType,
                 Table = table.ParameterTable
             }.PopulateField()
             );
@@ -211,16 +211,16 @@ namespace TinySql
 
         #region Insert Statement
 
-        public static TableParameterField Output(this InsertIntoTable table, string ParameterName = null)
+        public static TableParameterField Output(this InsertIntoTable table, string parameterName = null)
         {
-            if (ParameterName == null)
+            if (parameterName == null)
             {
-                ParameterName = "output" + table.Name;
+                parameterName = "output" + table.Name;
             }
             table.Output = new TableParameterField()
             {
-                ParameterName = "@" + ParameterName,
-                Name = ParameterName,
+                ParameterName = "@" + parameterName,
+                Name = parameterName,
                 ParameterTable = new Table(table.Builder, "inserted", ""),
                 Builder = table.Builder,
                 Table = table
@@ -235,7 +235,7 @@ namespace TinySql
 
 
 
-        public static InsertIntoTable Into(this SqlBuilder builder, string TableName, string Schema = null)
+        public static InsertIntoTable Into(this SqlBuilder builder, string tableName, string schema = null)
         {
             if (builder.Tables.Count > 0 && builder.BaseTable() is InsertIntoTable)
             {
@@ -243,40 +243,40 @@ namespace TinySql
             }
             else
             {
-                InsertIntoTable t = new InsertIntoTable(builder, TableName);
-                t.Schema = Schema;
+                InsertIntoTable t = new InsertIntoTable(builder, tableName);
+                t.Schema = schema;
                 builder.Tables.Add(t);
                 return t;
             }
         }
 
-        public static InsertIntoTable Value(this InsertIntoTable table, string FieldName, object Value)
+        public static InsertIntoTable Value(this InsertIntoTable table, string fieldName, object value)
         {
             
             Field f = new ParameterField()
             {
                 Builder = table.Builder,
                 Table = table,
-                DataType = Value == null ? null : Value.GetType(),
-                Name = FieldName,
-                ParameterName = "@" + FieldName,
-                Value = Value
+                DataType = value == null ? null : value.GetType(),
+                Name = fieldName,
+                ParameterName = "@" + fieldName,
+                Value = value
             };
             table.FieldList.Add(f.PopulateField());
             return table;
         }
 
-        public static InsertIntoTable Value<T>(this InsertIntoTable table, string FieldName, T Value, SqlDbType DataType, int MaxLength = -1, int Scale = -1)
+        public static InsertIntoTable Value<T>(this InsertIntoTable table, string fieldName, T value, SqlDbType dataType, int maxLength = -1, int scale = -1)
         {
             Field f = new ParameterField<T>()
             {
                 Builder = table.Builder,
-                Name = FieldName,
-                ParameterName = "@" + FieldName,
-                MaxLength = MaxLength,
-                Scale = Scale,
-                SqlDataType = DataType,
-                FieldValue = Value
+                Name = fieldName,
+                ParameterName = "@" + fieldName,
+                MaxLength = maxLength,
+                Scale = scale,
+                SqlDataType = dataType,
+                FieldValue = value
             };
 
             table.FieldList.Add(f.PopulateField());
@@ -294,7 +294,7 @@ namespace TinySql
         }
         public static Table ToTable(this BuiltinFn fn)
         {
-            return fn.table;
+            return fn.Table;
         }
 
 
@@ -316,9 +316,9 @@ namespace TinySql
         {
             return group.Builder.Builder();
         }
-        public static SqlBuilder Builder(this SqlBuilder Builder)
+        public static SqlBuilder Builder(this SqlBuilder builder)
         {
-            SqlBuilder b = Builder;
+            SqlBuilder b = builder;
             while (b.ParentBuilder != null)
             {
                 b = b.ParentBuilder;
@@ -333,18 +333,18 @@ namespace TinySql
 
 
 
-        public static Table From(this Table sql, string TableName, string Alias = null)
+        public static Table From(this Table sql, string tableName, string alias = null)
         {
-            return sql.Builder.From(TableName, Alias);
+            return sql.Builder.From(tableName, alias);
         }
-        public static Table From(this SqlBuilder sql, string TableName, string Alias = null, string Schema = null)
+        public static Table From(this SqlBuilder sql, string tableName, string alias = null, string schema = null)
         {
-            Table table = sql.FindTable(Alias ?? TableName, Schema);
+            Table table = sql.FindTable(alias ?? tableName, schema);
             if (table != null && !sql.JoinConditions.Select(x => x.ToTable).Any(x => x.Equals(table)))
             {
                 return table;
             }
-            table = new Table(sql, TableName, string.IsNullOrEmpty(Alias) ? "t" + sql.Tables.Count.ToString() : Alias, Schema);
+            table = new Table(sql, tableName, string.IsNullOrEmpty(alias) ? "t" + sql.Tables.Count.ToString() : alias, schema);
             sql.Tables.Add(table);
             return table;
         }
@@ -353,7 +353,7 @@ namespace TinySql
             return group.Join.ToTable;
         }
 
-        public static Table Into(this Table table, string TempTable, bool OutputTable = true)
+        public static Table Into(this Table table, string tempTable, bool outputTable = true)
         {
             if (table.Builder.SelectIntoTable != null)
             {
@@ -362,15 +362,15 @@ namespace TinySql
             table.Builder.SelectIntoTable = new TempTable()
             {
                 Builder = table.Builder,
-                Name = TempTable
+                Name = tempTable
             };
             table.Builder.SelectIntoTable.AllColumns(true);
             return table;
         }
 
-        public static TempTable OrderBy(this TempTable table, string FieldName, OrderByDirections Direction)
+        public static TempTable OrderBy(this TempTable table, string fieldName, OrderByDirections direction)
         {
-            Field field = table.FindField(FieldName);
+            Field field = table.FindField(fieldName);
             if (field == null)
             {
                 if (table.FieldList.Any(x => x.Name.Equals("*")))
@@ -380,12 +380,12 @@ namespace TinySql
                         Builder = table.Builder,
                         Table = table,
                         Alias = null,
-                        Name = FieldName
+                        Name = fieldName
                     };
                 }
                 else
                 {
-                    throw new InvalidOperationException(string.Format("The field '{0}' was not found in the table '{1}'", FieldName, table.Name));
+                    throw new InvalidOperationException(string.Format("The field '{0}' was not found in the table '{1}'", fieldName, table.Name));
                 }
             }
             if (!table.OrderByClause.Any(x => x.Field.ReferenceName.Equals(field.ReferenceName)))
@@ -393,15 +393,15 @@ namespace TinySql
                 table.OrderByClause.Add(new OrderBy()
                 {
                     Field = field,
-                    Direction = Direction
+                    Direction = direction
                 });
             }
             return table;
         }
 
-        public static Table OrderBy(this Table table, string FieldName, OrderByDirections Direction)
+        public static Table OrderBy(this Table table, string fieldName, OrderByDirections direction)
         {
-            Field field = table.FindField(FieldName);
+            Field field = table.FindField(fieldName);
             if (field == null)
             {
                 if (table.FieldList.Any(x => x.Name.Equals("*")))
@@ -411,19 +411,19 @@ namespace TinySql
                         Builder = table.Builder,
                         Table = table,
                         Alias = null,
-                        Name = FieldName
+                        Name = fieldName
                     };
                 }
                 else
                 {
-                    throw new InvalidOperationException(string.Format("The field '{0}' was not found in the table '{1}'", FieldName, table.Name));
+                    throw new InvalidOperationException(string.Format("The field '{0}' was not found in the table '{1}'", fieldName, table.Name));
                 }
 
             }
             table.Builder.OrderByClause.Add(new OrderBy()
                 {
                     Field = field,
-                    Direction = Direction
+                    Direction = direction
                 });
             return table;
 
@@ -441,14 +441,14 @@ namespace TinySql
             }
         }
 
-        internal static void Column(Table sql, MetadataColumn col, string Alias = null)
+        internal static void Column(Table sql, MetadataColumn col, string alias = null)
         {
             if (sql.FindField(col.Name) == null)
             {
                 Field f = new Field()
                 {
                     Name = col.Name,
-                    Alias = Alias,
+                    Alias = alias,
                     Table = sql,
                     Builder = sql.Builder
                 };
@@ -458,15 +458,15 @@ namespace TinySql
         }
 
 
-        public static Table AllColumns(this Table sql, bool UseWildcardCharacter = false)
+        public static Table AllColumns(this Table sql, bool useWildcardCharacter = false)
         {
             MetadataDatabase mdb = sql.Builder.Metadata;
-            if (!UseWildcardCharacter && mdb != null)
+            if (!useWildcardCharacter && mdb != null)
             {
                 MetadataTable mt = mdb.FindTable(sql.FullName);
                 if (mt == null)
                 {
-                    throw new ArgumentException(string.Format("The table {0} cannot be resolved with metadata. Must use wildcard", sql.FullName), "UseWildcardCharacter");
+                    throw new ArgumentException(string.Format("The table {0} cannot be resolved with metadata. Must use wildcard", sql.FullName), "useWildcardCharacter");
                 }
                 AllColumns(sql, mt);
                 return sql;
@@ -484,18 +484,18 @@ namespace TinySql
             return sql;
         }
 
-        public static Table ConcatColumns(this Table sql, string Alias, string Separator, params string[] Columns)
+        public static Table ConcatColumns(this Table sql, string alias, string separator, params string[] columns)
         {
             string prefix = sql.Alias;
-            string FieldName = Columns[0];
-            for (int i = 1; i < Columns.Length; i++)
+            string fieldName = columns[0];
+            for (int i = 1; i < columns.Length; i++)
             {
-                FieldName += string.Format(" + '{0}' + [{1}].{2}", Separator, prefix, Columns[i]);
+                fieldName += string.Format(" + '{0}' + [{1}].{2}", separator, prefix, columns[i]);
             }
             sql.FieldList.Add(new Field()
             {
-                Name = FieldName,
-                Alias = Alias,
+                Name = fieldName,
+                Alias = alias,
                 Table = sql,
                 Builder = sql.Builder
             });
@@ -503,23 +503,23 @@ namespace TinySql
         }
 
 
-        public static Table Columns(this Table sql, params string[] Fields)
+        public static Table Columns(this Table sql, params string[] fields)
         {
-            for (int i = 0; i < Fields.Length; i++)
+            for (int i = 0; i < fields.Length; i++)
             {
-                if (sql.FindField(Fields[i]) == null)
+                if (sql.FindField(fields[i]) == null)
                 {
-                    Column(sql, Fields[i], null);
+                    Column(sql, fields[i], null);
                 }
             }
             return sql;
         }
-        public static Table Column(this Table sql, string Field, string Alias = null)
+        public static Table Column(this Table sql, string field, string alias = null)
         {
             Field f = new Field()
             {
-                Name = Field,
-                Alias = Alias,
+                Name = field,
+                Alias = alias,
                 Table = sql,
                 Builder = sql.Builder
             };
@@ -530,7 +530,7 @@ namespace TinySql
                 if (mt != null)
                 {
                     MetadataColumn mc = null;
-                    if (mt.Columns.TryGetValue(Field, out mc))
+                    if (mt.Columns.TryGetValue(field, out mc))
                     {
                         mc.PopulateField<Field>(f);
                     }
@@ -540,12 +540,12 @@ namespace TinySql
             return sql;
         }
 
-        public static Table Column<T>(this Table table, T Value, string Alias)
+        public static Table Column<T>(this Table table, T value, string alias)
         {
             table.FieldList.Add(new ValueField<T>()
                 {
-                    Alias = Alias,
-                    FieldValue = Value,
+                    Alias = alias,
+                    FieldValue = value,
                     Table = table,
                     Builder = table.Builder
                 });
@@ -557,27 +557,27 @@ namespace TinySql
 
         #region JOIN conditions
 
-        public static Table SubSelect(this Table table, string TableName)
+        public static Table SubSelect(this Table table, string tableName)
         {
             MetadataTable mt = table.Builder.Metadata.FindTable(table.FullName);
             if (mt == null)
             {
                 throw new InvalidOperationException("Metadata for the table " + table.FullName + " could not be found");
             }
-            MetadataTable mtTo = table.Builder.Metadata.FindTable(TableName);
-            List<MetadataForeignKey> Fks = mtTo.ForeignKeys.Values.Where(x => x.ReferencedTable == mt.Name && x.ReferencedSchema == mt.Schema).ToList();
-            if (Fks.Count != 1)
+            MetadataTable mtTo = table.Builder.Metadata.FindTable(tableName);
+            List<MetadataForeignKey> fks = mtTo.ForeignKeys.Values.Where(x => x.ReferencedTable == mt.Name && x.ReferencedSchema == mt.Schema).ToList();
+            if (fks.Count != 1)
             {
-                throw new InvalidOperationException(string.Format("Extended one relationship to the table {0}. Found {1}.", mtTo.Fullname, Fks.Count));
+                throw new InvalidOperationException(string.Format("Extended one relationship to the table {0}. Found {1}.", mtTo.Fullname, fks.Count));
             }
 
-            MetadataForeignKey FK = Fks.First();
-            return table.SubSelect(mtTo.Name, mt.PrimaryKey.Columns.First().Name, FK.ColumnReferences.First().Name, null, mt.Schema, null);
+            MetadataForeignKey fk = fks.First();
+            return table.SubSelect(mtTo.Name, mt.PrimaryKey.Columns.First().Name, fk.ColumnReferences.First().Name, null, mt.Schema, null);
         }
 
-        public static Table SubSelect(this Table table, string TableName, string FromField, string ToField, string Alias = null, string Schema = null, string BuilderName = null)
+        public static Table SubSelect(this Table table, string tableName, string fromField, string toField, string alias = null, string schema = null, string builderName = null)
         {
-            string key = table.Alias + "." + FromField + ":" + (Alias ?? (Schema != null ? Schema + "." : "") + TableName) + "." + ToField;
+            string key = table.Alias + "." + fromField + ":" + (alias ?? (schema != null ? schema + "." : "") + tableName) + "." + toField;
             SqlBuilder b;
             if (table.Builder.SubQueries.TryGetValue(key, out b))
             {
@@ -590,67 +590,67 @@ namespace TinySql
                 table.Into(tmp, true);
                 into = table.Builder.SelectIntoTable;
             }
-            if (table.FindField(FromField) == null && !table.FieldList.Any(x => x.Name == "*"))
+            if (table.FindField(fromField) == null && !table.FieldList.Any(x => x.Name == "*"))
             {
-                table.Column(FromField);
+                table.Column(fromField);
             }
-            into.OrderBy(FromField, OrderByDirections.Asc);
+            into.OrderBy(fromField, OrderByDirections.Asc);
 
             tmp = System.IO.Path.GetRandomFileName().Replace(".", "");
             b = SqlBuilder.Select()
-                .From(TableName, Alias, Schema)
-                .Column(ToField)
+                .From(tableName, alias, schema)
+                .Column(toField)
                 .Into(tmp, true)
                 .WhereExists(table.Builder.SelectIntoTable)
-                .And(into, ToField, SqlOperators.Equal, FromField)
+                .And(into, toField, SqlOperators.Equal, fromField)
                 .Builder.SelectIntoTable
-                    .OrderBy(FromField, OrderByDirections.Asc)
+                    .OrderBy(fromField, OrderByDirections.Asc)
                 .Builder;
 
-            b.BuilderName = BuilderName;
+            b.BuilderName = builderName;
             table.Builder.AddSubQuery(key, b);
             return b.BaseTable();
 
         }
 
 
-        public static Join InnerJoin(this Table sql, string TableName, string Alias = null, string Schema = null)
+        public static Join InnerJoin(this Table sql, string tableName, string alias = null, string schema = null)
         {
-            return MakeJoin(Join.JoinTypes.Inner, sql, TableName, Alias, Schema);
+            return MakeJoin(Join.JoinTypes.Inner, sql, tableName, alias, schema);
         }
-        public static Join InnerJoin(this JoinConditionGroup group, string TableName, string Alias = null, string Schema = null)
+        public static Join InnerJoin(this JoinConditionGroup group, string tableName, string alias = null, string schema = null)
         {
-            return group.Join.FromTable.InnerJoin(TableName, Alias, Schema);
+            return group.Join.FromTable.InnerJoin(tableName, alias, schema);
         }
-        public static Join LeftOuterJoin(this Table sql, string TableName, string Alias = null, string Schema = null)
+        public static Join LeftOuterJoin(this Table sql, string tableName, string alias = null, string schema = null)
         {
-            return MakeJoin(Join.JoinTypes.LeftOuter, sql, TableName, Alias, Schema);
+            return MakeJoin(Join.JoinTypes.LeftOuter, sql, tableName, alias, schema);
         }
-        public static Join LeftOuterJoin(this JoinConditionGroup group, string TableName, string Alias = null, string Schema = null)
+        public static Join LeftOuterJoin(this JoinConditionGroup group, string tableName, string alias = null, string schema = null)
         {
-            return group.Join.FromTable.LeftOuterJoin(TableName, Alias, Schema);
+            return group.Join.FromTable.LeftOuterJoin(tableName, alias, schema);
         }
-        public static Join RightOuterJoin(this Table sql, string TableName, string Alias = null, string Schema = null)
+        public static Join RightOuterJoin(this Table sql, string tableName, string alias = null, string schema = null)
         {
-            return MakeJoin(Join.JoinTypes.RightOuter, sql, TableName, Alias, Schema);
+            return MakeJoin(Join.JoinTypes.RightOuter, sql, tableName, alias, schema);
         }
-        public static Join RightOuterJoin(this JoinConditionGroup group, string TableName, string Alias = null, string Schema = null)
+        public static Join RightOuterJoin(this JoinConditionGroup group, string tableName, string alias = null, string schema = null)
         {
-            return group.Join.FromTable.RightOuterJoin(TableName);
+            return group.Join.FromTable.RightOuterJoin(tableName);
         }
-        public static Join CrossJoin(this Table sql, string TableName)
+        public static Join CrossJoin(this Table sql, string tableName)
         {
-            return MakeJoin(Join.JoinTypes.Cross, sql, TableName);
+            return MakeJoin(Join.JoinTypes.Cross, sql, tableName);
         }
-        public static Join CrossJoin(this JoinConditionGroup group, string TableName, string Alias = null, string Schema = null)
+        public static Join CrossJoin(this JoinConditionGroup group, string tableName, string alias = null, string schema = null)
         {
-            return group.Join.FromTable.CrossJoin(TableName);
+            return group.Join.FromTable.CrossJoin(tableName);
         }
 
-        internal static Join MakeJoin(Join.JoinTypes JoinType, Table FromTable, string ToTable, string Alias = null, string Schema = null)
+        internal static Join MakeJoin(Join.JoinTypes joinType, Table fromTable, string toTable, string alias = null, string schema = null)
         {
-            Table right = FromTable.Builder.Tables.FirstOrDefault(x => x.Name.Equals((Alias ?? ToTable), StringComparison.InvariantCultureIgnoreCase) || (x.Alias != null && x.Alias.Equals(Alias, StringComparison.InvariantCultureIgnoreCase)));
-            if (FromTable.Builder.JoinConditions.Select(x => x.ToTable).Any(x => x.Equals(right)))
+            Table right = fromTable.Builder.Tables.FirstOrDefault(x => x.Name.Equals((alias ?? toTable), StringComparison.InvariantCultureIgnoreCase) || (x.Alias != null && x.Alias.Equals(alias, StringComparison.InvariantCultureIgnoreCase)));
+            if (fromTable.Builder.JoinConditions.Select(x => x.ToTable).Any(x => x.Equals(right)))
             {
                 right = null;
             }
@@ -658,57 +658,57 @@ namespace TinySql
 
             if (right == null)
             {
-                right = FromTable.Builder.From(ToTable, Alias, Schema);
+                right = fromTable.Builder.From(toTable, alias, schema);
             }
 
             Join join = new Join()
             {
-                JoinType = JoinType,
-                FromTable = FromTable,
+                JoinType = joinType,
+                FromTable = fromTable,
                 ToTable = right,
-                Builder = FromTable.Builder
+                Builder = fromTable.Builder
             };
-            FromTable.Builder.JoinConditions.Add(join);
+            fromTable.Builder.JoinConditions.Add(join);
             return join;
         }
 
-        public static ExistsConditionGroup And(this ExistsConditionGroup group, string FromField, SqlOperators Operator, string ToField)
+        public static ExistsConditionGroup And(this ExistsConditionGroup group, string fromField, SqlOperators Operator, string toField)
         {
-            return ExistsConditionInternal(group, FromField, Operator, ToField, group.Conditions.Count > 0 ? BoolOperators.And : BoolOperators.None);
+            return ExistsConditionInternal(group, fromField, Operator, toField, group.Conditions.Count > 0 ? BoolOperators.And : BoolOperators.None);
         }
 
-        public static ExistsConditionGroup And(this ExistsConditionGroup group, Table InTable, string InField, SqlOperators Operator, string ToField)
+        public static ExistsConditionGroup And(this ExistsConditionGroup group, Table inTable, string inField, SqlOperators Operator, string toField)
         {
-            return ExistsConditionInternal(group, InTable, InField, Operator, ToField, group.Conditions.Count == 0 ? BoolOperators.None : BoolOperators.And);
+            return ExistsConditionInternal(group, inTable, inField, Operator, toField, group.Conditions.Count == 0 ? BoolOperators.None : BoolOperators.And);
         }
 
-        public static ExistsConditionGroup And<T>(this ExistsConditionGroup group, string TableName, string FieldName, SqlOperators Operator, T Value)
+        public static ExistsConditionGroup And<T>(this ExistsConditionGroup group, string tableName, string fieldName, SqlOperators Operator, T value)
         {
-            return WhereExistsInternal<T>(group, TableName, FieldName, Operator, BoolOperators.And, Value);
+            return WhereExistsInternal<T>(group, tableName, fieldName, Operator, BoolOperators.And, value);
         }
-        public static ExistsConditionGroup Or<T>(this ExistsConditionGroup group, string TableName, string FieldName, SqlOperators Operator, T Value)
+        public static ExistsConditionGroup Or<T>(this ExistsConditionGroup group, string tableName, string fieldName, SqlOperators Operator, T value)
         {
-            return WhereExistsInternal<T>(group, TableName, FieldName, Operator, BoolOperators.Or, Value);
+            return WhereExistsInternal<T>(group, tableName, fieldName, Operator, BoolOperators.Or, value);
         }
 
-        private static ExistsConditionGroup WhereExistsInternal<T>(ExistsConditionGroup group, string TableName, string FieldName, SqlOperators Operator, BoolOperators LinkType, T value)
+        private static ExistsConditionGroup WhereExistsInternal<T>(ExistsConditionGroup group, string tableName, string fieldName, SqlOperators Operator, BoolOperators linkType, T value)
         {
             Table t = null;
-            if (group.InTable.Name.Equals(TableName, StringComparison.InvariantCultureIgnoreCase) || (group.InTable.Alias != null && group.InTable.Alias.Equals(TableName, StringComparison.InvariantCultureIgnoreCase)))
+            if (group.InTable.Name.Equals(tableName, StringComparison.InvariantCultureIgnoreCase) || (group.InTable.Alias != null && group.InTable.Alias.Equals(tableName, StringComparison.InvariantCultureIgnoreCase)))
             {
                 t = group.InTable;
             }
             if (t == null)
-                t = group.Builder.Tables.FirstOrDefault(x => x.Name.Equals(TableName, StringComparison.InvariantCultureIgnoreCase) || (x.Alias != null && x.Alias.Equals(TableName, StringComparison.InvariantCultureIgnoreCase)));
+                t = group.Builder.Tables.FirstOrDefault(x => x.Name.Equals(tableName, StringComparison.InvariantCultureIgnoreCase) || (x.Alias != null && x.Alias.Equals(tableName, StringComparison.InvariantCultureIgnoreCase)));
             if (t == null)
             {
-                throw new InvalidOperationException(string.Format("The EXISTS table '{0}' does not exist", TableName));
+                throw new InvalidOperationException(string.Format("The EXISTS table '{0}' does not exist", tableName));
             }
 
             ValueField<T> fv = new ValueField<T>()
             {
                 Table = t,
-                Name = FieldName,
+                Name = fieldName,
                 Builder = group.Builder,
                 FieldValue = value
 
@@ -716,11 +716,11 @@ namespace TinySql
             FieldCondition fc = new FieldCondition()
             {
                 Builder = group.Builder,
-                ConditionLink = group.Conditions.Count > 0 ? LinkType : BoolOperators.None,
+                ConditionLink = group.Conditions.Count > 0 ? linkType : BoolOperators.None,
                 ParentGroup = group,
                 Condition = Operator,
                 LeftTable = t,
-                leftField = fv
+                LeftField = fv
             };
             group.Conditions.Add(fc);
             if (group.SubConditions.Count > 0)
@@ -730,9 +730,9 @@ namespace TinySql
             return group;
         }
 
-        public static ExistsConditionGroup Or(this ExistsConditionGroup group, string FromField, SqlOperators Operator, string ToField)
+        public static ExistsConditionGroup Or(this ExistsConditionGroup group, string fromField, SqlOperators Operator, string toField)
         {
-            return ExistsConditionInternal(group, FromField, Operator, ToField, group.Conditions.Count > 0 ? BoolOperators.Or : BoolOperators.None);
+            return ExistsConditionInternal(group, fromField, Operator, toField, group.Conditions.Count > 0 ? BoolOperators.Or : BoolOperators.None);
         }
 
         public static ExistsConditionGroup AndGroup(this ExistsConditionGroup group)
@@ -740,11 +740,11 @@ namespace TinySql
             return ExistsGroupInternal(group, BoolOperators.And);
         }
 
-        private static ExistsConditionGroup ExistsGroupInternal(ExistsConditionGroup group, BoolOperators ConditionLink)
+        private static ExistsConditionGroup ExistsGroupInternal(ExistsConditionGroup group, BoolOperators conditionLink)
         {
             ExistsConditionGroup g = new ExistsConditionGroup()
             {
-                ConditionLink = ConditionLink,
+                ConditionLink = conditionLink,
                 Parent = group.Parent,
                 Builder = group.Builder,
                 FromTable = group.FromTable,
@@ -759,17 +759,17 @@ namespace TinySql
             return ExistsGroupInternal(group, BoolOperators.Or);
         }
 
-        private static ExistsConditionGroup ExistsConditionInternal(ExistsConditionGroup group, Table InTable, string InField, SqlOperators Operator, string ToField, BoolOperators LinkType)
+        private static ExistsConditionGroup ExistsConditionInternal(ExistsConditionGroup group, Table inTable, string inField, SqlOperators Operator, string toField, BoolOperators linkType)
         {
             // Field lf = FromTable.FieldList.FirstOrDefault(x => x.Name.Equals(FromField, StringComparison.InvariantCultureIgnoreCase) || (x.Alias != null && x.Alias.Equals(FromField, StringComparison.InvariantCultureIgnoreCase)));
-            Field lf = InTable.FindField(InField);
+            Field lf = inTable.FindField(inField);
             if (lf == null || group.FromTable == null)
             {
                 lf = new Field()
                 {
-                    Table = InTable,
+                    Table = inTable,
                     Builder = group.Builder,
-                    Name = InField,
+                    Name = inField,
                     Alias = null
                 };
             }
@@ -777,7 +777,7 @@ namespace TinySql
             Field rf = null;
             if (t != null)
             {
-                rf = t.FindField(ToField);
+                rf = t.FindField(toField);
             }
             // Field rf = group.InTable.FieldList.FirstOrDefault(x => x.Name.Equals(ToField, StringComparison.InvariantCultureIgnoreCase) || (x.Alias != null && x.Alias.Equals(ToField, StringComparison.InvariantCultureIgnoreCase)));
             // Field rf = group.InTable.FieldList.FirstOrDefault(x => x.Name.Equals(ToField, StringComparison.InvariantCultureIgnoreCase) || (x.Alias != null && x.Alias.Equals(ToField, StringComparison.InvariantCultureIgnoreCase)));
@@ -787,7 +787,7 @@ namespace TinySql
                 {
                     Table = t,
                     Builder = group.Builder,
-                    Name = ToField,
+                    Name = toField,
                     Alias = null
                 };
             }
@@ -795,43 +795,43 @@ namespace TinySql
             FieldCondition condition = new FieldCondition()
             {
                 Builder = group.Builder,
-                LeftTable = InTable,
-                leftField = lf,
+                LeftTable = inTable,
+                LeftField = lf,
                 RightTable = t,
                 RightField = rf,
                 Condition = Operator,
                 ParentGroup = group,
-                ConditionLink = LinkType
+                ConditionLink = linkType
             };
             group.Conditions.Add(condition);
             return group;
         }
 
-        private static ExistsConditionGroup ExistsConditionInternal(ExistsConditionGroup group, string FromField, SqlOperators Operator, string ToField, BoolOperators LinkType)
+        private static ExistsConditionGroup ExistsConditionInternal(ExistsConditionGroup group, string fromField, SqlOperators Operator, string toField, BoolOperators linkType)
         {
-            Table FromTable = null;
+            Table fromTable = null;
             if (group.FromTable == null)
             {
-                FromTable = group.Builder.Tables.First();
+                fromTable = group.Builder.Tables.First();
             }
             else
             {
-                FromTable = group.Builder.Tables.FirstOrDefault(x => x.Name.Equals(group.FromTable) || (x.Alias != null && x.Alias.Equals(group.FromTable)));
+                fromTable = group.Builder.Tables.FirstOrDefault(x => x.Name.Equals(group.FromTable) || (x.Alias != null && x.Alias.Equals(group.FromTable)));
             }
-            return ExistsConditionInternal(group, group.InTable, FromField, Operator, ToField, LinkType);
+            return ExistsConditionInternal(group, group.InTable, fromField, Operator, toField, linkType);
 
 
         }
 
 
 
-        public static JoinConditionGroup And(this JoinConditionGroup group, string FromField, SqlOperators Operator, string ToField)
+        public static JoinConditionGroup And(this JoinConditionGroup group, string fromField, SqlOperators Operator, string toField)
         {
-            return OnInternal(group, FromField, Operator, ToField, BoolOperators.And);
+            return OnInternal(group, fromField, Operator, toField, BoolOperators.And);
         }
-        public static JoinConditionGroup Or(this JoinConditionGroup group, string FromField, SqlOperators Operator, string ToField)
+        public static JoinConditionGroup Or(this JoinConditionGroup group, string fromField, SqlOperators Operator, string toField)
         {
-            return OnInternal(group, FromField, Operator, ToField, BoolOperators.Or);
+            return OnInternal(group, fromField, Operator, toField, BoolOperators.Or);
         }
 
         public static JoinConditionGroup AndGroup(this JoinConditionGroup group)
@@ -858,38 +858,38 @@ namespace TinySql
             return g;
         }
 
-        public static JoinConditionGroup On(this Join join, string FromField, SqlOperators Operator, string ToField)
+        public static JoinConditionGroup On(this Join join, string fromField, SqlOperators Operator, string toField)
         {
-            return OnInternal(join.Conditions, FromField, Operator, ToField, BoolOperators.None);
+            return OnInternal(join.Conditions, fromField, Operator, toField, BoolOperators.None);
         }
 
-        public static WhereConditionGroup Where<T>(this Table table, string TableName, string FieldName, SqlOperators Operator, T value)
+        public static WhereConditionGroup Where<T>(this Table table, string tableName, string fieldName, SqlOperators Operator, T value)
         {
-            return (WhereConditionGroup)WhereInternal<T>(table.Builder.WhereConditions, TableName, FieldName, Operator, value);
+            return (WhereConditionGroup)WhereInternal<T>(table.Builder.WhereConditions, tableName, fieldName, Operator, value);
         }
 
-        public static ExistsConditionGroup WhereExists(this Table table, string InTable)
+        public static ExistsConditionGroup WhereExists(this Table table, string inTable)
         {
-            return ExistsInternal(table.Builder.WhereConditions, InTable, table.Alias, table.Builder.WhereConditions.Conditions.Count > 0 ? BoolOperators.And : BoolOperators.None, false);
+            return ExistsInternal(table.Builder.WhereConditions, inTable, table.Alias, table.Builder.WhereConditions.Conditions.Count > 0 ? BoolOperators.And : BoolOperators.None, false);
         }
 
-        public static ExistsConditionGroup WhereExists(this Table table, Table InTable)
+        public static ExistsConditionGroup WhereExists(this Table table, Table inTable)
         {
-            return ExistsInternal(table.Builder.WhereConditions, InTable.Alias, table.Alias, table.Builder.WhereConditions.Conditions.Count > 0 ? BoolOperators.And : BoolOperators.None, false);
+            return ExistsInternal(table.Builder.WhereConditions, inTable.Alias, table.Alias, table.Builder.WhereConditions.Conditions.Count > 0 ? BoolOperators.And : BoolOperators.None, false);
         }
 
-        public static ExistsConditionGroup WhereNotExists(this Table table, string InTable)
+        public static ExistsConditionGroup WhereNotExists(this Table table, string inTable)
         {
-            return ExistsInternal(table.Builder.WhereConditions, InTable, table.Alias, table.Builder.WhereConditions.Conditions.Count > 0 ? BoolOperators.And : BoolOperators.None, true);
+            return ExistsInternal(table.Builder.WhereConditions, inTable, table.Alias, table.Builder.WhereConditions.Conditions.Count > 0 ? BoolOperators.And : BoolOperators.None, true);
         }
 
-        public static ExistsConditionGroup AndExists(this WhereConditionGroup group, string InTable, string FromTable = null)
+        public static ExistsConditionGroup AndExists(this WhereConditionGroup group, string inTable, string fromTable = null)
         {
-            return ExistsInternal(group, InTable, FromTable, group.Conditions.Count > 0 ? BoolOperators.And : BoolOperators.None, false);
+            return ExistsInternal(group, inTable, fromTable, group.Conditions.Count > 0 ? BoolOperators.And : BoolOperators.None, false);
         }
-        public static ExistsConditionGroup AndNotExists(this WhereConditionGroup group, string InTable, string Fromtable = null)
+        public static ExistsConditionGroup AndNotExists(this WhereConditionGroup group, string inTable, string fromtable = null)
         {
-            return ExistsInternal(group, InTable, Fromtable, group.Conditions.Count > 0 ? BoolOperators.And : BoolOperators.None, true);
+            return ExistsInternal(group, inTable, fromtable, group.Conditions.Count > 0 ? BoolOperators.And : BoolOperators.None, true);
         }
 
         public static WhereConditionGroup EndExists(this ExistsConditionGroup group)
@@ -897,63 +897,63 @@ namespace TinySql
             return (WhereConditionGroup)group.Parent;
         }
 
-        private static ExistsConditionGroup ExistsInternal(WhereConditionGroup group, string InTable, string FromTable, BoolOperators ConditionLink, bool Negated)
+        private static ExistsConditionGroup ExistsInternal(WhereConditionGroup group, string inTable, string fromTable, BoolOperators conditionLink, bool negated)
         {
             Table t = new Table()
             {
-                Name = InTable,
+                Name = inTable,
                 Builder = group.Builder,
                 Alias = null
             };
             ExistsConditionGroup exists = new ExistsConditionGroup()
             {
                 Builder = group.Builder,
-                ConditionLink = ConditionLink,
-                Negated = Negated,
+                ConditionLink = conditionLink,
+                Negated = negated,
                 Parent = group,
                 InTable = t,
-                FromTable = FromTable
+                FromTable = fromTable
             };
             group.SubConditions.Add(exists);
 
             return exists;
         }
 
-        public static JoinConditionGroup And(this JoinConditionGroup group, string FieldName, SqlOperators Operator, object Value, string TableName = null)
+        public static JoinConditionGroup And(this JoinConditionGroup group, string fieldName, SqlOperators Operator, object value, string tableName = null)
         {
-            if (string.IsNullOrEmpty(TableName))
+            if (string.IsNullOrEmpty(tableName))
             {
-                TableName = group.Join.ToTable.Alias;
+                tableName = group.Join.ToTable.Alias;
             }
-            return (JoinConditionGroup)WhereInternalAll((ConditionGroup)group, TableName, FieldName, Operator, Value, BoolOperators.And);
+            return (JoinConditionGroup)WhereInternalAll(@group, tableName, fieldName, Operator, value, BoolOperators.And);
         }
 
-        public static JoinConditionGroup And<T>(this JoinConditionGroup group, string FieldName, SqlOperators Operator, T Value, string TableName = null)
+        public static JoinConditionGroup And<T>(this JoinConditionGroup group, string fieldName, SqlOperators Operator, T value, string tableName = null)
         {
-            if (string.IsNullOrEmpty(TableName))
+            if (string.IsNullOrEmpty(tableName))
             {
-                TableName = group.Join.ToTable.Alias;
+                tableName = group.Join.ToTable.Alias;
             }
-            return (JoinConditionGroup)WhereInternalAll<T>((ConditionGroup)group, TableName, FieldName, Operator, Value, BoolOperators.And);
+            return (JoinConditionGroup)WhereInternalAll<T>(@group, tableName, fieldName, Operator, value, BoolOperators.And);
         }
-        public static JoinConditionGroup Or<T>(this JoinConditionGroup group, string FieldName, SqlOperators Operator, T Value, string TableName = null)
+        public static JoinConditionGroup Or<T>(this JoinConditionGroup group, string fieldName, SqlOperators Operator, T value, string tableName = null)
         {
-            if (string.IsNullOrEmpty(TableName))
+            if (string.IsNullOrEmpty(tableName))
             {
-                TableName = group.Join.ToTable.Alias;
+                tableName = group.Join.ToTable.Alias;
             }
-            return (JoinConditionGroup)WhereInternalAll<T>((ConditionGroup)group, TableName, FieldName, Operator, Value, BoolOperators.Or);
+            return (JoinConditionGroup)WhereInternalAll<T>(@group, tableName, fieldName, Operator, value, BoolOperators.Or);
         }
 
 
-        public static WhereConditionGroup And<T>(this ConditionGroup group, string TableName, string FieldName, SqlOperators Operator, T Value)
+        public static WhereConditionGroup And<T>(this ConditionGroup group, string tableName, string fieldName, SqlOperators Operator, T value)
         {
-            return (WhereConditionGroup)WhereInternal<T>(group, TableName, FieldName, Operator, Value, BoolOperators.And);
+            return (WhereConditionGroup)WhereInternal<T>(group, tableName, fieldName, Operator, value, BoolOperators.And);
         }
 
-        public static WhereConditionGroup Or<T>(this ConditionGroup group, string TableName, string FieldName, SqlOperators Operator, T Value)
+        public static WhereConditionGroup Or<T>(this ConditionGroup group, string tableName, string fieldName, SqlOperators Operator, T value)
         {
-            return (WhereConditionGroup)WhereInternal<T>(group, TableName, FieldName, Operator, Value, BoolOperators.Or);
+            return (WhereConditionGroup)WhereInternal<T>(group, tableName, fieldName, Operator, value, BoolOperators.Or);
         }
 
         public static WhereConditionGroup AndGroup(this WhereConditionGroup group)
@@ -980,19 +980,19 @@ namespace TinySql
             return g;
         }
 
-        private static ConditionGroup WhereInternalAll<T>(ConditionGroup group, string TableName, string FieldName, SqlOperators Operator, T value, BoolOperators LinkType = BoolOperators.None)
+        private static ConditionGroup WhereInternalAll<T>(ConditionGroup group, string tableName, string fieldName, SqlOperators Operator, T value, BoolOperators linkType = BoolOperators.None)
         {
 
-            Table t = group.Builder.Tables.FirstOrDefault(x => x.Name.Equals(TableName, StringComparison.InvariantCultureIgnoreCase) || (x.Alias != null && x.Alias.Equals(TableName, StringComparison.InvariantCultureIgnoreCase)));
+            Table t = group.Builder.Tables.FirstOrDefault(x => x.Name.Equals(tableName, StringComparison.InvariantCultureIgnoreCase) || (x.Alias != null && x.Alias.Equals(tableName, StringComparison.InvariantCultureIgnoreCase)));
             if (t == null)
             {
-                throw new InvalidOperationException(string.Format("The WHERE condition table '{0}' does not exist", TableName));
+                throw new InvalidOperationException(string.Format("The WHERE condition table '{0}' does not exist", tableName));
             }
             ValueField<T> fv = new ValueField<T>()
             {
                 Table = t,
 
-                Name = FieldName,
+                Name = fieldName,
                 Builder = group.Builder,
                 FieldValue = value
 
@@ -1000,11 +1000,11 @@ namespace TinySql
             FieldCondition fc = new FieldCondition()
             {
                 Builder = group.Builder,
-                ConditionLink = group.Conditions.Count > 0 ? LinkType : BoolOperators.None,
+                ConditionLink = group.Conditions.Count > 0 ? linkType : BoolOperators.None,
                 ParentGroup = group,
                 Condition = Operator,
                 LeftTable = t,
-                leftField = fv
+                LeftField = fv
             };
             group.Conditions.Add(fc);
             if (group.SubConditions.Count > 0)
@@ -1014,18 +1014,18 @@ namespace TinySql
             return group;
         }
 
-        internal static ConditionGroup WhereInternalAll(ConditionGroup group, string TableName, string FieldName, SqlOperators Operator, object value, BoolOperators LinkType = BoolOperators.None)
+        internal static ConditionGroup WhereInternalAll(ConditionGroup group, string tableName, string fieldName, SqlOperators Operator, object value, BoolOperators linkType = BoolOperators.None)
         {
 
-            Table t = group.Builder.Tables.FirstOrDefault(x => x.Name.Equals(TableName, StringComparison.InvariantCultureIgnoreCase) || (x.Alias != null && x.Alias.Equals(TableName, StringComparison.InvariantCultureIgnoreCase)));
+            Table t = group.Builder.Tables.FirstOrDefault(x => x.Name.Equals(tableName, StringComparison.InvariantCultureIgnoreCase) || (x.Alias != null && x.Alias.Equals(tableName, StringComparison.InvariantCultureIgnoreCase)));
             if (t == null)
             {
-                throw new InvalidOperationException(string.Format("The WHERE condition table '{0}' does not exist", TableName));
+                throw new InvalidOperationException(string.Format("The WHERE condition table '{0}' does not exist", tableName));
             }
             ValueField fv = new ValueField()
             {
                 Table = t,
-                Name = FieldName,
+                Name = fieldName,
                 Builder = group.Builder,
                 Value = value,
                 DataType = value.GetType()
@@ -1034,11 +1034,11 @@ namespace TinySql
             FieldCondition fc = new FieldCondition()
             {
                 Builder = group.Builder,
-                ConditionLink = group.Conditions.Count > 0 ? LinkType : BoolOperators.None,
+                ConditionLink = group.Conditions.Count > 0 ? linkType : BoolOperators.None,
                 ParentGroup = group,
                 Condition = Operator,
                 LeftTable = t,
-                leftField = fv
+                LeftField = fv
             };
             group.Conditions.Add(fc);
             if (group.SubConditions.Count > 0)
@@ -1050,19 +1050,19 @@ namespace TinySql
 
 
 
-        private static ConditionGroup WhereInternal<T>(ConditionGroup group, string TableName, string FieldName, SqlOperators Operator, T value, BoolOperators LinkType = BoolOperators.None)
+        private static ConditionGroup WhereInternal<T>(ConditionGroup group, string tableName, string fieldName, SqlOperators Operator, T value, BoolOperators linkType = BoolOperators.None)
         {
 
-            Table t = group.Builder.Tables.FirstOrDefault(x => x.Name.Equals(TableName, StringComparison.InvariantCultureIgnoreCase) || (x.Alias != null && x.Alias.Equals(TableName, StringComparison.InvariantCultureIgnoreCase)) || x.FullName.Equals(TableName, StringComparison.InvariantCultureIgnoreCase));
+            Table t = group.Builder.Tables.FirstOrDefault(x => x.Name.Equals(tableName, StringComparison.InvariantCultureIgnoreCase) || (x.Alias != null && x.Alias.Equals(tableName, StringComparison.InvariantCultureIgnoreCase)) || x.FullName.Equals(tableName, StringComparison.InvariantCultureIgnoreCase));
             if (t == null)
             {
-                throw new InvalidOperationException(string.Format("The WHERE condition table '{0}' does not exist", TableName));
+                throw new InvalidOperationException(string.Format("The WHERE condition table '{0}' does not exist", tableName));
             }
-            Field f = t.FindField(FieldName);
+            Field f = t.FindField(fieldName);
             ValueField<T> fv = new ValueField<T>()
             {
                 Table = t,
-                Name = f != null ? f.Name : FieldName,
+                Name = f != null ? f.Name : fieldName,
                 Builder = group.Builder,
                 FieldValue = value,
                 DataType = value.GetType()
@@ -1071,11 +1071,11 @@ namespace TinySql
             FieldCondition fc = new FieldCondition()
             {
                 Builder = group.Builder,
-                ConditionLink = group.Conditions.Count > 0 ? LinkType : BoolOperators.None,
+                ConditionLink = group.Conditions.Count > 0 ? linkType : BoolOperators.None,
                 ParentGroup = group,
                 Condition = Operator,
                 LeftTable = t,
-                leftField = fv.PopulateField()
+                LeftField = fv.PopulateField()
             };
             group.Conditions.Add(fc);
             if (group.SubConditions.Count > 0)
@@ -1085,19 +1085,19 @@ namespace TinySql
             return group;
         }
 
-        internal static JoinConditionGroup OnInternal(JoinConditionGroup group, Field FromField, SqlOperators Operator, Field ToField, BoolOperators LinkType = BoolOperators.None)
+        internal static JoinConditionGroup OnInternal(JoinConditionGroup group, Field fromField, SqlOperators Operator, Field toField, BoolOperators linkType = BoolOperators.None)
         {
             Join join = group.Join;
             FieldCondition condition = new FieldCondition()
             {
                 Builder = join.Builder,
                 LeftTable = join.FromTable,
-                leftField = FromField,
+                LeftField = fromField,
                 RightTable = join.ToTable,
-                RightField = ToField,
+                RightField = toField,
                 Condition = Operator,
                 ParentGroup = group,
-                ConditionLink = LinkType
+                ConditionLink = linkType
             };
             group.Conditions.Add(condition);
             return group;
@@ -1143,9 +1143,9 @@ namespace TinySql
         //}
 
 
-        internal static bool TryPopulateField(this Field f, string UseTable = null, string UseField = null)
+        internal static bool TryPopulateField(this Field f, string useTable = null, string useField = null)
         {
-            if (f.Table == null && string.IsNullOrEmpty(UseTable))
+            if (f.Table == null && string.IsNullOrEmpty(useTable))
             {
                 return false;
             }
@@ -1156,13 +1156,13 @@ namespace TinySql
             {
                 return false;
             }
-            MetadataTable mt = mdb.FindTable(string.IsNullOrEmpty(UseTable) ? f.Table.FullName : UseTable);
+            MetadataTable mt = mdb.FindTable(string.IsNullOrEmpty(useTable) ? f.Table.FullName : useTable);
             if (mt == null)
             {
                 return false;
             }
             MetadataColumn mc = null;
-            if (!mt.Columns.TryGetValue(string.IsNullOrEmpty(UseField) ? f.Name : UseField, out mc))
+            if (!mt.Columns.TryGetValue(string.IsNullOrEmpty(useField) ? f.Name : useField, out mc))
             {
                 return false;
             }
@@ -1170,45 +1170,45 @@ namespace TinySql
             return true;
         }
 
-        internal static JoinConditionGroup OnInternal(JoinConditionGroup group, string FromField, SqlOperators Operator, string ToField, BoolOperators LinkType = BoolOperators.None)
+        internal static JoinConditionGroup OnInternal(JoinConditionGroup group, string fromField, SqlOperators Operator, string toField, BoolOperators linkType = BoolOperators.None)
         {
             Join join = group.Join;
-            Field lf = join.FromTable.FindField(FromField);
+            Field lf = join.FromTable.FindField(fromField);
             if (lf == null)
             {
                 lf = new Field()
                 {
                     Table = join.FromTable,
                     Builder = join.Builder,
-                    Name = FromField,
+                    Name = fromField,
                     Alias = null
                 };
                 lf.TryPopulateField();
             }
-            Field rf = join.ToTable.FindField(ToField);
+            Field rf = join.ToTable.FindField(toField);
             if (rf == null)
             {
                 rf = new Field()
                 {
                     Table = join.ToTable,
                     Builder = join.Builder,
-                    Name = ToField,
+                    Name = toField,
                     Alias = null
                 };
                 rf.TryPopulateField();
             }
-            return OnInternal(group, lf, Operator, rf, LinkType);
+            return OnInternal(group, lf, Operator, rf, linkType);
         }
 
         #endregion
 
         #region If Statements
 
-        public static SqlBuilder Begin(this ConditionGroup group, SqlBuilder.StatementTypes StatementType)
+        public static SqlBuilder Begin(this ConditionGroup group, SqlBuilder.StatementTypes statementType)
         {
             if (group.Builder is IfStatement)
             {
-                return Begin((IfStatement)group.Builder, StatementType);
+                return Begin((IfStatement)group.Builder, statementType);
             }
             else
             {
@@ -1216,9 +1216,9 @@ namespace TinySql
             }
         }
 
-        public static SqlBuilder Begin(this IfStatement builder, SqlBuilder.StatementTypes StatementType)
+        public static SqlBuilder Begin(this IfStatement builder, SqlBuilder.StatementTypes statementType)
         {
-            builder.StatementBody.StatementType = StatementType;
+            builder.StatementBody.StatementType = statementType;
             return builder.StatementBody;
         }
         public static IfStatement End(this SqlBuilder builder)
@@ -1248,11 +1248,11 @@ namespace TinySql
             return BranchInternal(builder, BranchStatements.Else);
         }
 
-        private static IfStatement BranchInternal(IfStatement builder, BranchStatements Branch)
+        private static IfStatement BranchInternal(IfStatement builder, BranchStatements branch)
         {
             IfStatement statement = new IfStatement()
             {
-                BranchStatement = Branch,
+                BranchStatement = branch,
                 ParentBuilder = builder
             };
             builder.ElseIfStatements.Add(statement);

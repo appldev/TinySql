@@ -2,9 +2,7 @@
 using System.Linq;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System.Collections.Generic;
-using Microsoft.CSharp;
 using TinySql;
-using TinySql.Metadata;
 using System.IO;
 using TinySql.Serialization;
 

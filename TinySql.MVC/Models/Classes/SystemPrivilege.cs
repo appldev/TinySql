@@ -1,11 +1,10 @@
 using System;
-using System.Collections.Generic;
 using TinySql.Attributes;
 
 namespace TinySql.MVC.Models
 {	public partial class SystemPrivilege
 {
-		[PK]
+		[Pk]
 		public Decimal  SystemPrivilegeID { get; set; }
 
 		public Decimal  CreatedBy { get; set; }

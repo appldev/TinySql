@@ -1,11 +1,10 @@
 using System;
-using System.Collections.Generic;
 using TinySql.Attributes;
 
 namespace TinySql.Classes
 {	public partial class Eventlog
 {
-		[PK]
+		[Pk]
 		public Decimal  EventLogID { get; set; }
 
 		public Decimal  CategoryID { get; set; }

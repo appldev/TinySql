@@ -235,7 +235,7 @@ namespace TinySql.Metadata
             {
                 mdb = new MetadataDatabase()
                 {
-                    ID = g,
+                    Id = g,
                     Name = SqlDatabase.Name,
                     Server = SqlServer.Name + (!string.IsNullOrEmpty(SqlServer.InstanceName) && SqlServer.Name.IndexOf('\\') == -1 ? "" : ""),
                     Builder = builder,
@@ -333,7 +333,7 @@ namespace TinySql.Metadata
 
             mt = new MetadataTable()
             {
-                ID = view.ID,
+                Id = view.ID,
                 Schema = view.Schema,
                 Name = view.Name,
                 //Parent = mdb
@@ -374,7 +374,7 @@ namespace TinySql.Metadata
                 {
                     MetadataColumn col = new MetadataColumn()
                     {
-                        ID = column.ID,
+                        Id = column.ID,
                         Parent = mt,
                         //Database = mdb,
                         Name = column.Name,
@@ -444,7 +444,7 @@ namespace TinySql.Metadata
                     {
                         Key key = new Key()
                         {
-                            ID = idx.ID,
+                            Id = idx.ID,
                             Parent = mt,
                             Database = mdb,
                             Name = idx.Name,
@@ -525,7 +525,7 @@ namespace TinySql.Metadata
 
             mt = new MetadataTable()
             {
-                ID = table.ID,
+                Id = table.ID,
                 Schema = table.Schema,
                 Name = table.Name,
                 //Parent = mdb
@@ -566,7 +566,7 @@ namespace TinySql.Metadata
                 {
                     MetadataColumn col = new MetadataColumn()
                     {
-                        ID = column.ID,
+                        Id = column.ID,
                         Parent = mt,
                         //Database = mdb,
                         Name = column.Name,
@@ -635,7 +635,7 @@ namespace TinySql.Metadata
                 {
                     Key key = new Key()
                     {
-                        ID = idx.ID,
+                        Id = idx.ID,
                         Parent = mt,
                         Database = mdb,
                         Name = idx.Name,
@@ -655,7 +655,7 @@ namespace TinySql.Metadata
                 {
                     MetadataForeignKey mfk = new MetadataForeignKey()
                     {
-                        ID = FK.ID,
+                        Id = FK.ID,
                         Parent = mt,
                         Database = mdb,
                         Name = FK.Name,
@@ -708,7 +708,7 @@ namespace TinySql.Metadata
             {
                 MetadataForeignKey mfk = new MetadataForeignKey()
                 {
-                    ID = 0,
+                    Id = 0,
                     Name = vfk.values[0].Split(new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries)[0],
                     ReferencedKey = "",
                     ReferencedTable = vfk.values[0].Split(new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries)[1],
@@ -739,7 +739,7 @@ namespace TinySql.Metadata
                         {
                             Name = from,
                             IsForeignKey = true,
-                            ID = 0,
+                            Id = 0,
                             SqlDataType = SqlDbType.NVarChar,
                             Nullable = false,
                             Length = 0,

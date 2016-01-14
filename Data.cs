@@ -14,19 +14,19 @@ namespace TinySql
     {
         #region Execute methods
 
-        public static ResultTable Execute(this SqlBuilder Builder, int TimeoutSeconds = 30, bool WithMetadata = true, ResultTable.DateHandlingEnum? DateHandling = null, bool UseCache = true, string UseHierachyField = null, params object[] Format)
+        public static ResultTable Execute(this SqlBuilder builder, int timeoutSeconds = 30, bool withMetadata = true, ResultTable.DateHandlingEnum? dateHandling = null, bool useCache = true, string useHierachyField = null, params object[] format)
         {
-            if (UseCache && CacheProvider.UseResultCache)
+            if (useCache && CacheProvider.UseResultCache)
             {
-                if (CacheProvider.ResultCache.IsCached(Builder))
+                if (CacheProvider.ResultCache.IsCached(builder))
                 {
-                    return CacheProvider.ResultCache.Get(Builder);
+                    return CacheProvider.ResultCache.Get(builder);
                 }
             }
-            ResultTable result = new ResultTable(Builder, TimeoutSeconds, WithMetadata, DateHandling, UseHierachyField, Format);
+            ResultTable result = new ResultTable(builder, timeoutSeconds, withMetadata, dateHandling, useHierachyField, format);
             if (CacheProvider.UseResultCache)
             {
-                CacheProvider.ResultCache.Add(Builder, result);
+                CacheProvider.ResultCache.Add(builder, result);
             }
             return result;
 
@@ -34,9 +34,9 @@ namespace TinySql
 
 
 
-        public static ResultTable Execute(this List<SqlBuilder> Builders, int TimeoutSeconds = 30)
+        public static ResultTable Execute(this List<SqlBuilder> builders, int timeoutSeconds = 30)
         {
-            return Execute(Builders.ToArray(), TimeoutSeconds);
+            return Execute(builders.ToArray(), timeoutSeconds);
         }
 
         private static ResultTable ExecuteRelatedInternal(SqlBuilder builder, Dictionary<string, RowData> results)
@@ -73,15 +73,14 @@ namespace TinySql
             {
                 context.Open();
                 SqlCommand cmd = new SqlCommand(builder.ToSql(), context);
-                SqlDataAdapter adapter = new SqlDataAdapter(cmd);
-                adapter.AcceptChangesDuringFill = false;
+                SqlDataAdapter adapter = new SqlDataAdapter(cmd) {AcceptChangesDuringFill = false};
                 adapter.Fill(dt);
                 context.Close();
             }
 
             if (builder.SubQueries.Count > 0)
             {
-                Dictionary<string, RowData> subresults = new System.Collections.Generic.Dictionary<string, RowData>(results);
+                Dictionary<string, RowData> subresults = new Dictionary<string, RowData>(results);
                 if (dt.Rows.Count > 0)
                 {
                     MetadataTable mt = builder.BaseTable().WithMetadata().Model;
@@ -93,9 +92,9 @@ namespace TinySql
                         subresults.Add(mt.Fullname, row);
                     }
                 }
-                foreach (SqlBuilder Builder in builder.SubQueries.Values)
+                foreach (SqlBuilder sb in builder.SubQueries.Values)
                 {
-                    ResultTable sub = ExecuteRelatedInternal(Builder, subresults);
+                    ResultTable sub = ExecuteRelatedInternal(sb, subresults);
                     foreach (RowData row in sub)
                     {
                         table.Add(row);
@@ -107,36 +106,36 @@ namespace TinySql
 
         }
 
-        public static ResultTable Execute(this SqlBuilder[] Builders, int TimeoutSeconds = 30)
+        public static ResultTable Execute(this SqlBuilder[] builders, int timeoutSeconds = 30)
         {
             ResultTable table = new ResultTable();
             using (TransactionScope trans = new TransactionScope(TransactionScopeOption.RequiresNew, new TransactionOptions()
             {
                 IsolationLevel = System.Transactions.IsolationLevel.ReadCommitted,
-                Timeout = TimeSpan.FromSeconds(TimeoutSeconds)
+                Timeout = TimeSpan.FromSeconds(timeoutSeconds)
             }))
             {
                 try
                 {
-                    foreach (SqlBuilder builder in Builders)
+                    foreach (SqlBuilder mainBuilder in builders)
                     {
                         DataTable dt = new DataTable();
-                        using (SqlConnection context = new SqlConnection(builder.ConnectionString))
+                        using (SqlConnection context = new SqlConnection(mainBuilder.ConnectionString))
                         {
                             context.Open();
-                            SqlCommand cmd = new SqlCommand(builder.ToSql(), context);
+                            SqlCommand cmd = new SqlCommand(mainBuilder.ToSql(), context);
                             SqlDataAdapter adapter = new SqlDataAdapter(cmd);
                             adapter.AcceptChangesDuringFill = false;
                             adapter.Fill(dt);
                             context.Close();
                         }
 
-                        if (builder.SubQueries.Count > 0)
+                        if (mainBuilder.SubQueries.Count > 0)
                         {
                             Dictionary<string, RowData> results = new Dictionary<string, RowData>();
                             if (dt.Rows.Count > 0)
                             {
-                                MetadataTable mt = builder.BaseTable().WithMetadata().Model;
+                                MetadataTable mt = mainBuilder.BaseTable().WithMetadata().Model;
                                 if (!results.ContainsKey(mt.Fullname))
                                 {
                                     ResultTable rt = new ResultTable(dt, ResultTable.DateHandlingEnum.None);
@@ -145,9 +144,9 @@ namespace TinySql
                                     table.Add(row);
                                 }
                             }
-                            foreach (SqlBuilder Builder in builder.SubQueries.Values)
+                            foreach (SqlBuilder sb in mainBuilder.SubQueries.Values)
                             {
-                                ResultTable sub = ExecuteRelatedInternal(Builder, results);
+                                ResultTable sub = ExecuteRelatedInternal(sb, results);
                                 foreach (RowData row in sub)
                                 {
                                     table.Add(row);
@@ -156,20 +155,20 @@ namespace TinySql
                         }
                     }
                 }
-                catch (TransactionException exTrans)
+                catch (TransactionException)
                 {
                     trans.Dispose();
-                    throw exTrans;
+                    throw;
                 }
-                catch (SqlException exSql)
+                catch (SqlException)
                 {
                     trans.Dispose();
-                    throw exSql;
+                    throw;
                 }
-                catch (ApplicationException exApplication)
+                catch (ApplicationException)
                 {
                     trans.Dispose();
-                    throw exApplication;
+                    throw;
                 }
                 trans.Complete();
             }
@@ -181,10 +180,10 @@ namespace TinySql
 
 
 
-        public static DataTable DataTable(this SqlBuilder Builder, string ConnectionString = null, int TimeoutSeconds = 30, params object[] Format)
+        public static DataTable DataTable(this SqlBuilder builder, string connectionString = null, int timeoutSeconds = 30, params object[] format)
         {
-            ConnectionString = ConnectionString ?? Builder.ConnectionString ?? SqlBuilder.DefaultConnection;
-            if (ConnectionString == null)
+            connectionString = connectionString ?? builder.ConnectionString ?? SqlBuilder.DefaultConnection;
+            if (connectionString == null)
             {
                 throw new InvalidOperationException("The ConnectionString must be set on the Execute Method or on the SqlBuilder");
             }
@@ -197,11 +196,11 @@ namespace TinySql
             {
                 try
                 {
-                    using (SqlConnection context = new SqlConnection(ConnectionString))
+                    using (SqlConnection context = new SqlConnection(connectionString))
                     {
                         context.Open();
-                        SqlCommand cmd = new SqlCommand(Builder.ToSql(Format), context);
-                        cmd.CommandTimeout = TimeoutSeconds;
+                        SqlCommand cmd = new SqlCommand(builder.ToSql(format), context);
+                        cmd.CommandTimeout = timeoutSeconds;
                         SqlDataAdapter adapter = new SqlDataAdapter(cmd);
                         adapter.Fill(dt);
                         context.Close();
@@ -210,13 +209,13 @@ namespace TinySql
                 catch (TransactionException exTrans)
                 {
                     trans.Dispose();
-                    throw exTrans;
+                    throw;
                 }
                 trans.Complete();
             }
-            if (Builder.StatementType == SqlBuilder.StatementTypes.Procedure)
+            if (builder.StatementType == SqlBuilder.StatementTypes.Procedure)
             {
-                FillBuilderFromProcedureOutput(Builder, dt);
+                FillBuilderFromProcedureOutput(builder, dt);
             }
             return dt;
         }
@@ -235,10 +234,10 @@ namespace TinySql
             }
         }
 
-        public static DataSet DataSet(this SqlBuilder Builder, string ConnectionString = null, int TimeoutSeconds = 60, params object[] Format)
+        public static DataSet DataSet(this SqlBuilder builder, string connectionString = null, int timeoutSeconds = 60, params object[] format)
         {
-            ConnectionString = ConnectionString ?? Builder.ConnectionString ?? SqlBuilder.DefaultConnection;
-            if (ConnectionString == null)
+            connectionString = connectionString ?? builder.ConnectionString ?? SqlBuilder.DefaultConnection;
+            if (connectionString == null)
             {
                 throw new InvalidOperationException("The ConnectionString must be set on the Execute Method or on the SqlBuilder");
             }
@@ -246,15 +245,15 @@ namespace TinySql
             using (TransactionScope trans = new TransactionScope(TransactionScopeOption.RequiresNew, new TransactionOptions()
             {
                 IsolationLevel = System.Transactions.IsolationLevel.ReadCommitted,
-                Timeout = TimeSpan.FromSeconds(TimeoutSeconds)
+                Timeout = TimeSpan.FromSeconds(timeoutSeconds)
             }))
             {
                 try
                 {
-                    using (SqlConnection context = new SqlConnection(ConnectionString))
+                    using (SqlConnection context = new SqlConnection(connectionString))
                     {
                         context.Open();
-                        SqlCommand cmd = new SqlCommand(Builder.ToSql(Format), context);
+                        SqlCommand cmd = new SqlCommand(builder.ToSql(format), context);
                         SqlDataAdapter adapter = new SqlDataAdapter(cmd);
                         adapter.AcceptChangesDuringFill = false;
                         adapter.Fill(ds);
@@ -268,38 +267,38 @@ namespace TinySql
                 }
                 trans.Complete();
             }
-            if (Builder.StatementType == SqlBuilder.StatementTypes.Procedure)
+            if (builder.StatementType == SqlBuilder.StatementTypes.Procedure)
             {
-                FillBuilderFromProcedureOutput(Builder, ds.Tables[0]);
+                FillBuilderFromProcedureOutput(builder, ds.Tables[0]);
             }
             return ds;
         }
 
-        private static int ExecuteNonQueryInternal(SqlBuilder Builder, string ConnectionString, int Timeout = 30)
+        private static int ExecuteNonQueryInternal(SqlBuilder builder, string connectionString, int timeout = 30)
         {
-            using (SqlConnection context = new SqlConnection(ConnectionString))
+            using (SqlConnection context = new SqlConnection(connectionString))
             {
                 context.Open();
                 SqlCommand cmd = null;
-                if (Builder.StatementType != SqlBuilder.StatementTypes.Procedure)
+                if (builder.StatementType != SqlBuilder.StatementTypes.Procedure)
                 {
-                    cmd = new SqlCommand(Builder.ToSql(Builder.Format), context);
+                    cmd = new SqlCommand(builder.ToSql(builder.Format), context);
                 }
                 else
                 {
-                    cmd = new SqlCommand(Builder.Procedure.Name, context);
+                    cmd = new SqlCommand(builder.Procedure.Name, context);
                     cmd.CommandType = CommandType.StoredProcedure;
-                    foreach (ParameterField par in Builder.Procedure.Parameters)
+                    foreach (ParameterField par in builder.Procedure.Parameters)
                     {
                         cmd.Parameters.Add(ToSqlParameter(par));
                     }
                 }
-                cmd.CommandTimeout = Timeout;
+                cmd.CommandTimeout = timeout;
                 int i = cmd.ExecuteNonQuery();
                 context.Close();
-                if (Builder.StatementType == SqlBuilder.StatementTypes.Procedure && Builder.Procedure.Parameters.Count(x => x.IsOutput) > 0)
+                if (builder.StatementType == SqlBuilder.StatementTypes.Procedure && builder.Procedure.Parameters.Count(x => x.IsOutput) > 0)
                 {
-                    foreach (ParameterField par in Builder.Procedure.Parameters.Where(x => x.IsOutput))
+                    foreach (ParameterField par in builder.Procedure.Parameters.Where(x => x.IsOutput))
                     {
                         par.Value = cmd.Parameters[par.ParameterName].Value;
                     }
@@ -329,23 +328,23 @@ namespace TinySql
         }
 
 
-        public static int ExecuteNonQuery(this SqlBuilder Builder, string ConnectionString = null, int TimeoutSeconds = 30)
+        public static int ExecuteNonQuery(this SqlBuilder builder, string connectionString = null, int timeoutSeconds = 30)
         {
-            return new SqlBuilder[] { Builder }.ExecuteNonQuery(ConnectionString, TimeoutSeconds);
+            return new SqlBuilder[] { builder }.ExecuteNonQuery(connectionString, timeoutSeconds);
         }
 
-        public static int ExecuteNonQuery(this SqlBuilder[] Builders, string ConnectionString = null, int TimeoutSeconds = 30)
+        public static int ExecuteNonQuery(this SqlBuilder[] builders, string connectionString = null, int timeoutSeconds = 30)
         {
-            ConnectionString = ConnectionString ?? SqlBuilder.DefaultConnection;
-            if (ConnectionString == null)
+            connectionString = connectionString ?? SqlBuilder.DefaultConnection;
+            if (connectionString == null)
             {
                 throw new InvalidOperationException("The ConnectionString must be set on the Execute Method or on the SqlBuilder");
             }
-            int RowsAffected = 0;
+            int rowsAffected = 0;
             using (TransactionScope trans = new TransactionScope(TransactionScopeOption.RequiresNew, new TransactionOptions()
             {
                 IsolationLevel = System.Transactions.IsolationLevel.ReadCommitted,
-                Timeout = TimeSpan.FromSeconds(TimeoutSeconds)
+                Timeout = TimeSpan.FromSeconds(timeoutSeconds)
             }))
             {
                 try
@@ -353,12 +352,7 @@ namespace TinySql
                     // using (SqlConnection context = new SqlConnection(ConnectionString))
                     //{
                     //  context.Open();
-                    foreach (SqlBuilder Builder in Builders)
-                    {
-                        // SqlCommand cmd = new SqlCommand(Builder.ToSql(Builder.Format), context);
-                        // RowsAffected += cmd.ExecuteNonQuery();
-                        RowsAffected += ExecuteNonQueryInternal(Builder, Builder.ConnectionString ?? ConnectionString, TimeoutSeconds);
-                    }
+                    rowsAffected += builders.Sum(builder => ExecuteNonQueryInternal(builder, builder.ConnectionString ?? connectionString, timeoutSeconds));
                     //context.Close();
                     //}
                 }
@@ -379,102 +373,102 @@ namespace TinySql
                 }
                 trans.Complete();
             }
-            return RowsAffected;
+            return rowsAffected;
         }
 
         #endregion
 
         #region FirstOrDefault<T> Methods
-        public static T FirstOrDefault<T>(this SqlBuilder Builder, string ConnectionString = null, int TimeoutSeconds = 30, bool AllowPrivateProperties = false, bool EnforceTypesafety = true, params object[] Format)
+        public static T FirstOrDefault<T>(this SqlBuilder builder, string connectionString = null, int timeoutSeconds = 30, bool allowPrivateProperties = false, bool enforceTypesafety = true, params object[] format)
         {
-            DataTable dt = DataTable(Builder, ConnectionString, TimeoutSeconds, Format);
+            DataTable dt = DataTable(builder, connectionString, timeoutSeconds, format);
             if (dt.Rows.Count == 0)
             {
                 return default(T);
             }
-            return TypeBuilder.PopulateObject<T>(dt, dt.Rows[0], AllowPrivateProperties, EnforceTypesafety);
+            return TypeBuilder.PopulateObject<T>(dt, dt.Rows[0], allowPrivateProperties, enforceTypesafety);
         }
 
         #endregion
 
             #region List<T> Methods
 
-        public static List<T> All<T>(string TableName = null, int? Top = null, bool Distinct = false, string ConnectionString = null, int TimeoutSeconds = 30, bool AllowPrivateProperties = false, bool EnforceTypesafety = true)
+        public static List<T> All<T>(string tableName = null, int? top = null, bool distinct = false, string connectionString = null, int timeoutSeconds = 30, bool allowPrivateProperties = false, bool enforceTypesafety = true)
         {
-            return List<T>(null, All<T>(TableName, Top, Distinct, ConnectionString, TimeoutSeconds), AllowPrivateProperties, EnforceTypesafety);
+            return List<T>(null, All<T>(tableName, top, distinct, connectionString, timeoutSeconds), allowPrivateProperties, enforceTypesafety);
         }
 
-        public static List<T> List<T>(string TableName = null, string[] Properties = null, string[] ExcludeProperties = null, int? Top = null, bool Distinct = false, string ConnectionString = null, int TimeoutSeconds = 30, bool AllowPrivateProperties = false, bool EnforceTypesafety = true, params object[] Format)
+        public static List<T> List<T>(string tableName = null, string[] properties = null, string[] excludeProperties = null, int? top = null, bool distinct = false, string connectionString = null, int timeoutSeconds = 30, bool allowPrivateProperties = false, bool enforceTypesafety = true, params object[] format)
         {
-            SqlBuilder builder = TypeBuilder.Select<T>(TableName, Properties, ExcludeProperties, Top, Distinct);
-            return builder.List<T>(ConnectionString, TimeoutSeconds, AllowPrivateProperties, EnforceTypesafety, Format);
+            SqlBuilder builder = TypeBuilder.Select<T>(tableName, properties, excludeProperties, top, distinct);
+            return builder.List<T>(connectionString, timeoutSeconds, allowPrivateProperties, enforceTypesafety, format);
         }
 
-        public static List<T> List<T>(this SqlBuilder Builder, DataTable dataTable, bool AllowPrivateProperties, bool EnforceTypesafety)
+        public static List<T> List<T>(this SqlBuilder builder, DataTable dataTable, bool allowPrivateProperties, bool enforceTypesafety)
         {
             List<T> list = new List<T>();
             foreach (DataRow row in dataTable.Rows)
             {
-                list.Add(TypeBuilder.PopulateObject<T>(dataTable, row, AllowPrivateProperties, EnforceTypesafety));
+                list.Add(TypeBuilder.PopulateObject<T>(dataTable, row, allowPrivateProperties, enforceTypesafety));
             }
             return list;
         }
 
-        public static S List<T, S>(this SqlBuilder Builder, DataTable dataTable, bool AllowPrivateProperties, bool EnforceTypesafety)
+        public static TS List<T, TS>(this SqlBuilder builder, DataTable dataTable, bool allowPrivateProperties, bool enforceTypesafety)
         {
-            ICollection<T> list = Activator.CreateInstance<S>() as ICollection<T>;
+            ICollection<T> list = Activator.CreateInstance<TS>() as ICollection<T>;
             foreach (DataRow row in dataTable.Rows)
             {
-                list.Add(TypeBuilder.PopulateObject<T>(dataTable, row, AllowPrivateProperties, EnforceTypesafety));
+                list.Add(TypeBuilder.PopulateObject<T>(dataTable, row, allowPrivateProperties, enforceTypesafety));
             }
-            return (S)list;
+            return (TS)list;
         }
 
-        public static S List<T, S>(this SqlBuilder Builder, string ConnectionString = null, int TimeoutSeconds = 30, bool AllowPrivateProperties = false, bool EnforceTypesafety = true, params object[] Format)
+        public static TS List<T, TS>(this SqlBuilder builder, string connectionString = null, int timeoutSeconds = 30, bool allowPrivateProperties = false, bool enforceTypesafety = true, params object[] format)
         {
-            DataTable dt = DataTable(Builder, ConnectionString, TimeoutSeconds, Format);
-            DataSet ds = DataSet(Builder, ConnectionString, TimeoutSeconds, Format);
-            return List<T, S>(Builder, dt, AllowPrivateProperties, EnforceTypesafety);
+            DataTable dt = DataTable(builder, connectionString, timeoutSeconds, format);
+            DataSet ds = DataSet(builder, connectionString, timeoutSeconds, format);
+            return List<T, TS>(builder, dt, allowPrivateProperties, enforceTypesafety);
 
 
         }
 
 
-        public static List<T> List<T>(this SqlBuilder Builder, string ConnectionString = null, int TimeoutSeconds = 30, bool AllowPrivateProperties = false, bool EnforceTypesafety = true, params object[] Format)
+        public static List<T> List<T>(this SqlBuilder builder, string connectionString = null, int timeoutSeconds = 30, bool allowPrivateProperties = false, bool enforceTypesafety = true, params object[] format)
         {
-            DataTable dt = DataTable(Builder, ConnectionString, TimeoutSeconds, Format);
-            return List<T>(Builder, dt, AllowPrivateProperties, EnforceTypesafety);
+            DataTable dt = DataTable(builder, connectionString, timeoutSeconds, format);
+            return List<T>(builder, dt, allowPrivateProperties, enforceTypesafety);
         }
 
         #endregion
 
         #region Dictionary<TKey, TValue> Methods
 
-        public static Dictionary<TKey, T> All<TKey, T>(string TKeyPropertyName, string TableName = null, int? Top = null, bool Distinct = false, string ConnectionString = null, int TimeoutSeconds = 30, bool AllowPrivateProperties = false, bool EnforceTypesafety = true)
+        public static Dictionary<TKey, T> All<TKey, T>(string keyPropertyName, string tableName = null, int? top = null, bool distinct = false, string connectionString = null, int timeoutSeconds = 30, bool allowPrivateProperties = false, bool enforceTypesafety = true)
         {
-            return Dictionary<TKey, T>(null, TKeyPropertyName, All<T>(TableName, Top, Distinct, ConnectionString, TimeoutSeconds), AllowPrivateProperties, EnforceTypesafety);
+            return Dictionary<TKey, T>(null, keyPropertyName, All<T>(tableName, top, distinct, connectionString, timeoutSeconds), allowPrivateProperties, enforceTypesafety);
         }
 
-        public static Dictionary<TKey, T> Dictionary<TKey, T>(string TKeyPropertyName, string TableName = null, string[] Properties = null, string[] ExcludeProperties = null, int? Top = null, bool Distinct = false, string ConnectionString = null, int TimeoutSeconds = 30, bool AllowPrivateProperties = false, bool EnforceTypesafety = true, params object[] Format)
+        public static Dictionary<TKey, T> Dictionary<TKey, T>(string keyPropertyName, string tableName = null, string[] properties = null, string[] excludeProperties = null, int? top = null, bool distinct = false, string connectionString = null, int timeoutSeconds = 30, bool allowPrivateProperties = false, bool enforceTypesafety = true, params object[] format)
         {
-            SqlBuilder builder = TypeBuilder.Select<T>(TableName, Properties, ExcludeProperties, Top, Distinct);
-            return builder.Dictionary<TKey, T>(TKeyPropertyName, ConnectionString, TimeoutSeconds, AllowPrivateProperties, EnforceTypesafety, Format);
+            SqlBuilder builder = TypeBuilder.Select<T>(tableName, properties, excludeProperties, top, distinct);
+            return builder.Dictionary<TKey, T>(keyPropertyName, connectionString, timeoutSeconds, allowPrivateProperties, enforceTypesafety, format);
         }
 
-        public static S Dictionary<TKey, T, S>(this SqlBuilder Builder, string TKeyPropertyName, DataTable dataTable, bool AllowPrivateProperties, bool EnforceTypesafety, Func<S, TKey, T, bool> InsertUpdateDelegate = null) where S : IDictionary<TKey, T>
+        public static TS Dictionary<TKey, T, TS>(this SqlBuilder builder, string keyPropertyName, DataTable dataTable, bool allowPrivateProperties, bool enforceTypesafety, Func<TS, TKey, T, bool> insertUpdateDelegate = null) where TS : IDictionary<TKey, T>
         {
-            IDictionary<TKey, T> dict = Activator.CreateInstance<S>() as IDictionary<TKey, T>;
+            IDictionary<TKey, T> dict = Activator.CreateInstance<TS>() as IDictionary<TKey, T>;
             foreach (DataRow row in dataTable.Rows)
             {
-                T instance = TypeBuilder.PopulateObject<T>(dataTable, row, AllowPrivateProperties, EnforceTypesafety);
-                PropertyInfo prop = instance.GetType().GetProperty(TKeyPropertyName);
+                T instance = TypeBuilder.PopulateObject<T>(dataTable, row, allowPrivateProperties, enforceTypesafety);
+                PropertyInfo prop = instance.GetType().GetProperty(keyPropertyName);
                 if (prop != null)
                 {
-                    if (InsertUpdateDelegate != null)
+                    if (insertUpdateDelegate != null)
                     {
-                        if (!InsertUpdateDelegate((S)dict, (TKey)prop.GetValue(instance, null), instance))
+                        if (!insertUpdateDelegate((TS)dict, (TKey)prop.GetValue(instance, null), instance))
                         {
-                            throw new InvalidOperationException("The InsertUpdate delegate failed to insert or update the dictionary " + typeof(S).Name);
+                            throw new InvalidOperationException("The InsertUpdate delegate failed to insert or update the dictionary " + typeof(TS).Name);
                         }
                     }
                     else
@@ -484,12 +478,12 @@ namespace TinySql
                 }
                 else
                 {
-                    FieldInfo field = instance.GetType().GetField(TKeyPropertyName);
-                    if (InsertUpdateDelegate != null)
+                    FieldInfo field = instance.GetType().GetField(keyPropertyName);
+                    if (insertUpdateDelegate != null)
                     {
-                        if (!InsertUpdateDelegate((S)dict, (TKey)field.GetValue(instance), instance))
+                        if (!insertUpdateDelegate((TS)dict, (TKey)field.GetValue(instance), instance))
                         {
-                            throw new InvalidOperationException("The InsertUpdate delegate failed to insert or update the dictionary " + typeof(S).Name);
+                            throw new InvalidOperationException("The InsertUpdate delegate failed to insert or update the dictionary " + typeof(TS).Name);
                         }
                     }
                     else
@@ -499,50 +493,50 @@ namespace TinySql
 
                 }
             }
-            return (S)dict;
+            return (TS)dict;
         }
 
-        public static Dictionary<TKey, T> Dictionary<TKey, T>(this SqlBuilder Builder, string TKeyPropertyName, DataTable dataTable, bool AllowPrivateProperties, bool EnforceTypesafety)
+        public static Dictionary<TKey, T> Dictionary<TKey, T>(this SqlBuilder builder, string keyPropertyName, DataTable dataTable, bool allowPrivateProperties, bool enforceTypesafety)
         {
             Dictionary<TKey, T> dict = new Dictionary<TKey, T>();
             foreach (DataRow row in dataTable.Rows)
             {
-                T instance = TypeBuilder.PopulateObject<T>(dataTable, row, AllowPrivateProperties, EnforceTypesafety);
-                PropertyInfo prop = instance.GetType().GetProperty(TKeyPropertyName);
+                T instance = TypeBuilder.PopulateObject<T>(dataTable, row, allowPrivateProperties, enforceTypesafety);
+                PropertyInfo prop = instance.GetType().GetProperty(keyPropertyName);
                 if (prop != null)
                 {
                     dict.Add((TKey)prop.GetValue(instance, null), instance);
                 }
                 else
                 {
-                    FieldInfo field = instance.GetType().GetField(TKeyPropertyName);
+                    FieldInfo field = instance.GetType().GetField(keyPropertyName);
                     dict.Add((TKey)field.GetValue(instance), instance);
                 }
             }
             return dict;
         }
 
-        public static Dictionary<TKey, T> Dictionary<TKey, T>(this SqlBuilder Builder, string TKeyPropertyName, string ConnectionString = null, int TimeoutSeconds = 30, bool AllowPrivateProperties = false, bool EnforceTypesafety = true, params object[] Format)
+        public static Dictionary<TKey, T> Dictionary<TKey, T>(this SqlBuilder builder, string keyPropertyName, string connectionString = null, int timeoutSeconds = 30, bool allowPrivateProperties = false, bool enforceTypesafety = true, params object[] format)
         {
             // Dictionary<TKey, T> dict = new Dictionary<TKey, T>();
-            DataTable dt = DataTable(Builder, ConnectionString, TimeoutSeconds, Format);
-            return (Dictionary<TKey, T>)Dictionary<TKey, T, Dictionary<TKey, T>>(Builder, TKeyPropertyName, dt, AllowPrivateProperties, EnforceTypesafety);
+            DataTable dt = DataTable(builder, connectionString, timeoutSeconds, format);
+            return Dictionary<TKey, T, Dictionary<TKey, T>>(builder, keyPropertyName, dt, allowPrivateProperties, enforceTypesafety);
         }
 
-        public static S Dictionary<TKey, T, S>(this SqlBuilder Builder, string TKeyPropertyName, string ConnectionString = null, int TimeoutSeconds = 30, bool AllowPrivateProperties = false, bool EnforceTypesafety = true, params object[] Format) where S : IDictionary<TKey, T>
+        public static TS Dictionary<TKey, T, TS>(this SqlBuilder builder, string keyPropertyName, string connectionString = null, int timeoutSeconds = 30, bool allowPrivateProperties = false, bool enforceTypesafety = true, params object[] format) where TS : IDictionary<TKey, T>
         {
-            IDictionary<TKey, T> dict = Activator.CreateInstance<S>() as IDictionary<TKey, T>;
-            DataTable dt = DataTable(Builder, ConnectionString, TimeoutSeconds, Format);
-            return (S)Dictionary<TKey, T, S>(Builder, TKeyPropertyName, dt, AllowPrivateProperties, EnforceTypesafety);
+            IDictionary<TKey, T> dict = Activator.CreateInstance<TS>() as IDictionary<TKey, T>;
+            DataTable dt = DataTable(builder, connectionString, timeoutSeconds, format);
+            return Dictionary<TKey, T, TS>(builder, keyPropertyName, dt, allowPrivateProperties, enforceTypesafety);
         }
 
         #endregion
 
 
-        public static DataTable All<T>(string TableName = null, int? Top = null, bool Distinct = false, string ConnectionString = null, int TimeoutSeconds = 30)
+        public static DataTable All<T>(string tableName = null, int? top = null, bool distinct = false, string connectionString = null, int timeoutSeconds = 30)
         {
-            SqlBuilder builder = TypeBuilder.Select<T>(TableName, new string[] { "*" }, null, Top, Distinct);
-            return builder.DataTable(ConnectionString, TimeoutSeconds, null);
+            SqlBuilder builder = TypeBuilder.Select<T>(tableName, new string[] { "*" }, null, top, distinct);
+            return builder.DataTable(connectionString, timeoutSeconds, null);
         }
 
 

@@ -1,11 +1,10 @@
 using System;
-using System.Collections.Generic;
 using TinySql.Attributes;
 
 namespace TinySql.Classes
 {	public partial class SearchQuery
 {
-		[PK]
+		[Pk]
 		public Decimal  SearchQueryID { get; set; }
 
 		public Decimal  CreatedBy { get; set; }

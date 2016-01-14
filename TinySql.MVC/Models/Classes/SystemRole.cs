@@ -1,11 +1,10 @@
 using System;
-using System.Collections.Generic;
 using TinySql.Attributes;
 
 namespace TinySql.MVC.Models
 {	public partial class SystemRole
 {
-		[PK]
+		[Pk]
 		public Decimal  SystemRoleID { get; set; }
 
 		public Decimal  CreatedBy { get; set; }

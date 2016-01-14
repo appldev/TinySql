@@ -1,18 +1,17 @@
 using System;
-using System.Collections.Generic;
 using TinySql.Attributes;
 
 namespace TinySql.MVC.Models
 {	public partial class Activity
 {
-		[PK]
+		[Pk]
 		public Decimal  ActivityID { get; set; }
 
 		public Decimal  ActivityStatusID { get; set; }
 
 		public Decimal  ActivityTypeID { get; set; }
 
-		[FK("Contact","ContactID","dbo","Contact_Activity_ContactID")]
+		[Fk("Contact","ContactID","dbo","Contact_Activity_ContactID")]
 		public Decimal  ContactID { get; set; }
 
 		public Decimal  CreatedBy { get; set; }

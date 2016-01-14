@@ -1,11 +1,10 @@
 using System;
-using System.Collections.Generic;
 using TinySql.Attributes;
 
 namespace TinySql.MVC.Models
 {	public partial class SystemRolePrivilege
 {
-		[PK]
+		[Pk]
 		public Decimal  SystemRolePrivilegeID { get; set; }
 
 		public Int32  CanCreate { get; set; }
@@ -26,10 +25,10 @@ namespace TinySql.MVC.Models
 
 		public DateTime  ModifiedOn { get; set; }
 
-		[FK("SystemPrivilege","SystemPrivilegeID","dbo","RefSystemPrivilege7")]
+		[Fk("SystemPrivilege","SystemPrivilegeID","dbo","RefSystemPrivilege7")]
 		public Decimal  SystemPrivilegeID { get; set; }
 
-		[FK("SystemRole","SystemRoleID","dbo","RefSystemRole6")]
+		[Fk("SystemRole","SystemRoleID","dbo","RefSystemRole6")]
 		public Decimal  SystemRoleID { get; set; }
 
 	}

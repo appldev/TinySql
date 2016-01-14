@@ -31,7 +31,7 @@ namespace UnitTests
             Console.WriteLine(StopWatch.Stop(g, StopWatch.WatchTypes.Milliseconds, "Account 526 updated to the new name in {0}ms"));
             g = StopWatch.Start();
             account.Name = OldName;
-            builder = TypeBuilder.Update<Account>(account, Properties: new string[] { "Name", "ModifiedOn" });
+            builder = TypeBuilder.Update<Account>(account, properties: new string[] { "Name", "ModifiedOn" });
             i = builder.ExecuteNonQuery();
             Assert.IsTrue(i == 1, "Account 526 was NOT updated back to the original name again");
             Console.WriteLine(StopWatch.Stop(g, StopWatch.WatchTypes.Milliseconds, "Account 526 updated back to the original name again in {0}ms"));

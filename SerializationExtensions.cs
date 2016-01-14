@@ -1,6 +1,5 @@
 ﻿using Newtonsoft.Json;
 using Newtonsoft.Json.Bson;
-using Newtonsoft.Json.Converters;
 using System;
 using System.IO;
 using System.Text;
@@ -8,20 +7,20 @@ using TinySql.Metadata;
 
 namespace TinySql.Serialization
 {
-    public enum SerializerFormats : int
+    public enum SerializerFormats
     {
         Json = 1,
         Bson = 2
     }
     public static class SerializationExtensions
     {
-        private static Newtonsoft.Json.JsonSerializerSettings settings
+        private static JsonSerializerSettings Settings
         {
             get
             {
-                return new Newtonsoft.Json.JsonSerializerSettings()
+                return new JsonSerializerSettings()
                 {
-                    PreserveReferencesHandling = Newtonsoft.Json.PreserveReferencesHandling.Objects,
+                    PreserveReferencesHandling = PreserveReferencesHandling.Objects,
                     ReferenceLoopHandling = ReferenceLoopHandling.Serialize,
                     TypeNameAssemblyFormat = System.Runtime.Serialization.Formatters.FormatterAssemblyStyle.Simple,
                     TypeNameHandling = TypeNameHandling.Objects,
@@ -37,7 +36,7 @@ namespace TinySql.Serialization
             using (StringReader sr = new StringReader(json))
             using (JsonTextReader jr = new JsonTextReader(sr))
             {
-                JsonSerializer serializer = JsonSerializer.Create(settings);
+                JsonSerializer serializer = JsonSerializer.Create(Settings);
                 return serializer.Deserialize<T>(jr);
             }
         }
@@ -47,56 +46,56 @@ namespace TinySql.Serialization
             using (MemoryStream ms = new MemoryStream())
             using (BsonWriter bw = new BsonWriter(ms))
             {
-                JsonSerializer serializer = JsonSerializer.Create(settings);
+                JsonSerializer serializer = JsonSerializer.Create(Settings);
                 serializer.Serialize(bw, Object, typeof(T));
                 return ms.ToArray();
             }
         }
 
-        public static string ToJson<T>(T Object, bool FormatOutput = false)
+        public static string ToJson<T>(T Object, bool formatOutput = false)
         {
             StringBuilder sb = new StringBuilder();
             using (StringWriter sw = new StringWriter(sb))
             using (JsonWriter jw = new JsonTextWriter(sw))
             {
-                jw.Formatting = FormatOutput ? Formatting.Indented : Formatting.None;
-                JsonSerializer serializer = JsonSerializer.Create(settings);
+                jw.Formatting = formatOutput ? Formatting.Indented : Formatting.None;
+                JsonSerializer serializer = JsonSerializer.Create(Settings);
                 serializer.Serialize(jw, Object);
                 sw.Flush();
             }
             return sb.ToString();
         }
 
-        public static void ToFile<T>(T Object, string FileName, bool CreateDirectory = true, bool FormatOutput = false, SerializerFormats FileFormat = SerializerFormats.Json)
+        public static void ToFile<T>(T Object, string fileName, bool createDirectory = true, bool formatOutput = false, SerializerFormats fileFormat = SerializerFormats.Json)
         {
-            if (FileName.EndsWith(".json", StringComparison.OrdinalIgnoreCase))
+            if (fileName.EndsWith(".json", StringComparison.OrdinalIgnoreCase))
             {
-                FileFormat = SerializerFormats.Json;
+                fileFormat = SerializerFormats.Json;
             }
-            else if (FileName.EndsWith(".bson", StringComparison.OrdinalIgnoreCase))
+            else if (fileName.EndsWith(".bson", StringComparison.OrdinalIgnoreCase))
             {
-                FileFormat = SerializerFormats.Bson;
+                fileFormat = SerializerFormats.Bson;
             }
-            string Ext = FileFormat == SerializerFormats.Json ? "json" : "bson";
-            if (CreateDirectory)
+            string ext = fileFormat == SerializerFormats.Json ? "json" : "bson";
+            if (createDirectory)
             {
-                if (!Directory.Exists(Path.GetDirectoryName(FileName)))
+                if (!Directory.Exists(Path.GetDirectoryName(fileName)))
                 {
-                    Directory.CreateDirectory(Path.GetDirectoryName(FileName));
+                    Directory.CreateDirectory(Path.GetDirectoryName(fileName));
                 }
             }
-            if (!Path.GetExtension(FileName).ToLower().EndsWith(Ext))
+            if (!Path.GetExtension(fileName).ToLower().EndsWith(ext))
             {
-                FileName += Ext;
+                fileName += ext;
             }
-            JsonSerializer serializer = JsonSerializer.Create(settings);
-            if (FileFormat == SerializerFormats.Json)
+            JsonSerializer serializer = JsonSerializer.Create(Settings);
+            if (fileFormat == SerializerFormats.Json)
             {
-                using (FileStream fs = File.OpenWrite(FileName))
+                using (FileStream fs = File.OpenWrite(fileName))
                 using (StreamWriter sw = new StreamWriter(fs))
                 using (JsonWriter jw = new JsonTextWriter(sw))
                 {
-                    jw.Formatting = FormatOutput ? Formatting.Indented : Formatting.None;
+                    jw.Formatting = formatOutput ? Formatting.Indented : Formatting.None;
                     serializer.Serialize(jw, Object);
                 }
             }
@@ -106,39 +105,39 @@ namespace TinySql.Serialization
                 using (BsonWriter bw = new BsonWriter(ms))
                 {
                     serializer.Serialize(bw, Object, typeof(T));
-                    File.WriteAllBytes(FileName, ms.ToArray());
+                    File.WriteAllBytes(fileName, ms.ToArray());
                 }
             }
         }
 
-        public static T FromFile<T>(string FileName, SerializerFormats? FileFormat = null)
+        public static T FromFile<T>(string fileName, SerializerFormats? fileFormat = null)
         {
-            if (FileFormat == null)
+            if (fileFormat == null)
             {
-                if (FileName.EndsWith(".bson", System.StringComparison.OrdinalIgnoreCase))
+                if (fileName.EndsWith(".bson", StringComparison.OrdinalIgnoreCase))
                 {
-                    FileFormat = SerializerFormats.Bson;
+                    fileFormat = SerializerFormats.Bson;
                 }
-                else if (FileName.EndsWith(".json", System.StringComparison.OrdinalIgnoreCase))
+                else if (fileName.EndsWith(".json", StringComparison.OrdinalIgnoreCase))
                 {
-                    FileFormat = SerializerFormats.Json;
+                    fileFormat = SerializerFormats.Json;
                 }
                 else
                 {
-                    throw new ArgumentException("The file format cannot be infered from the file name. Set the FileFormat parameter", "FileFormat");
+                    throw new ArgumentException("The file format cannot be infered from the file name. Set the FileFormat parameter", "fileFormat");
                 }
             }
-            Newtonsoft.Json.JsonSerializerSettings settings = new Newtonsoft.Json.JsonSerializerSettings()
+            JsonSerializerSettings settings = new JsonSerializerSettings()
             {
-                PreserveReferencesHandling = Newtonsoft.Json.PreserveReferencesHandling.All
+                PreserveReferencesHandling = PreserveReferencesHandling.All
             };
 
-            using (FileStream fs = File.OpenRead(FileName))
+            using (FileStream fs = File.OpenRead(fileName))
             {
                 JsonSerializer serializer = JsonSerializer.Create(settings);
                 using (StreamReader sr = new StreamReader(fs))
                 {
-                    if (FileFormat.Value == SerializerFormats.Json)
+                    if (fileFormat.Value == SerializerFormats.Json)
                     {
                         using (JsonTextReader jr = new JsonTextReader(sr))
                         {
@@ -160,40 +159,40 @@ namespace TinySql.Serialization
 
         #region Metadata
 
-        public static void ToFile(this MetadataDatabase Metadata, string FileName, bool CreateDirectory = true)
+        public static void ToFile(this MetadataDatabase metadata, string fileName, bool createDirectory = true)
         {
 
-            if (CreateDirectory)
+            if (createDirectory)
             {
-                if (!Directory.Exists(Path.GetDirectoryName(FileName)))
+                if (!Directory.Exists(Path.GetDirectoryName(fileName)))
                 {
-                    Directory.CreateDirectory(Path.GetDirectoryName(FileName));
+                    Directory.CreateDirectory(Path.GetDirectoryName(fileName));
                 }
             }
-            if (!Path.GetExtension(FileName).ToLower().EndsWith(".json"))
+            if (!Path.GetExtension(fileName).ToLower().EndsWith(".json"))
             {
-                FileName += ".json";
+                fileName += ".json";
             }
-            using (FileStream fs = File.OpenWrite(FileName))
+            using (FileStream fs = File.OpenWrite(fileName))
             using (StreamWriter sw = new StreamWriter(fs))
             using (JsonWriter jw = new JsonTextWriter(sw))
             {
                 jw.Formatting = Formatting.None;
-                JsonSerializer serializer = JsonSerializer.Create(settings);
-                serializer.Serialize(jw, Metadata);
+                JsonSerializer serializer = JsonSerializer.Create(Settings);
+                serializer.Serialize(jw, metadata);
             }
         }
-        public static MetadataDatabase FromFile(string FileName)
+        public static MetadataDatabase FromFile(string fileName)
         {
-            Newtonsoft.Json.JsonSerializerSettings settings = new Newtonsoft.Json.JsonSerializerSettings()
+            JsonSerializerSettings settings = new JsonSerializerSettings()
             {
-                PreserveReferencesHandling = Newtonsoft.Json.PreserveReferencesHandling.All
+                PreserveReferencesHandling = PreserveReferencesHandling.All
             };
-            if (!Path.GetExtension(FileName).ToLower().EndsWith(".json"))
+            if (!Path.GetExtension(fileName).ToLower().EndsWith(".json"))
             {
-                FileName += ".json";
+                fileName += ".json";
             }
-            using (FileStream fs = File.OpenRead(FileName))
+            using (FileStream fs = File.OpenRead(fileName))
             using (StreamReader sr = new StreamReader(fs))
             using (JsonTextReader jr = new JsonTextReader(sr))
             {

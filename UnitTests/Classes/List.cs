@@ -1,11 +1,10 @@
 using System;
-using System.Collections.Generic;
 using TinySql.Attributes;
 
 namespace TinySql.Classes
 {	public partial class List
 {
-		[PK]
+		[Pk]
 		public Decimal  ListID { get; set; }
 
 		public String  CMID { get; set; }

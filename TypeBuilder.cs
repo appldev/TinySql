@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Collections;
 using System.Data;
@@ -16,16 +15,16 @@ namespace TinySql
         {
 
         }
-        private static TypeCache instance = null;
+        private static TypeCache _instance = null;
         public static TypeCache Default
         {
             get
             {
-                if (instance == null)
+                if (_instance == null)
                 {
-                    instance = new TypeCache();
+                    _instance = new TypeCache();
                 }
-                return instance;
+                return _instance;
             }
         }
 
@@ -39,57 +38,57 @@ namespace TinySql
 
     public static class TypeBuilder
     {
-        public static SqlBuilder Select(Type ObjectType, string TableName = null, string[] Properties = null, string[] ExcludeProperties = null, int? Top = null, bool Distinct = false)
+        public static SqlBuilder Select(Type objectType, string tableName = null, string[] properties = null, string[] excludeProperties = null, int? top = null, bool distinct = false)
         {
-            SqlBuilder builder = SqlBuilder.Select(Top, Distinct);
-            Table BaseTable = null;
-            if (string.IsNullOrEmpty(TableName))
+            SqlBuilder builder = SqlBuilder.Select(top, distinct);
+            Table baseTable = null;
+            if (string.IsNullOrEmpty(tableName))
             {
-                BaseTable = builder.From(ObjectType.Name);
+                baseTable = builder.From(objectType.Name);
             }
             else
             {
-                BaseTable = builder.From(TableName);
+                baseTable = builder.From(tableName);
             }
-            if (Properties == null)
+            if (properties == null)
             {
-                Properties = ObjectType.GetProperties().Select(x => x.Name).Union(ObjectType.GetFields().Select(x => x.Name)).ToArray();
+                properties = objectType.GetProperties().Select(x => x.Name).Union(objectType.GetFields().Select(x => x.Name)).ToArray();
             }
-            if (ExcludeProperties == null)
+            if (excludeProperties == null)
             {
-                ExcludeProperties = new string[0];
+                excludeProperties = new string[0];
             }
-            foreach (string Name in Properties.Except(ExcludeProperties))
+            foreach (string name in properties.Except(excludeProperties))
             {
-                if (Name.Equals("*"))
+                if (name.Equals("*"))
                 {
-                    BaseTable.AllColumns(false);
+                    baseTable.AllColumns(false);
                     return builder;
                 }
-                BaseTable.Column(Name);
+                baseTable.Column(name);
             }
             return builder;
         }
 
-        public static SqlBuilder Update<T>(T instance, string TableName = null, string Schema = null, string[] Properties = null, string[] ExcludeProperties = null, bool OutputPrimaryKey = false)
+        public static SqlBuilder Update<T>(T instance, string tableName = null, string schema = null, string[] properties = null, string[] excludeProperties = null, bool outputPrimaryKey = false)
         {
             UpdateTable table = SqlBuilder.Update()
-                .Table(TableName ?? instance.GetType().Name,Schema);
+                .Table(tableName ?? instance.GetType().Name,schema);
 
-            Metadata.MetadataTable mt = SqlBuilder.DefaultMetadata.FindTable(TableName ?? instance.GetType().Name);
+            Metadata.MetadataTable mt = SqlBuilder.DefaultMetadata.FindTable(tableName ?? instance.GetType().Name);
 
-            if (Properties == null)
+            if (properties == null)
             {
-                Properties = instance.GetType().GetProperties().Select(x => x.Name).ToArray();
+                properties = instance.GetType().GetProperties().Select(x => x.Name).ToArray();
             }
-            if (ExcludeProperties != null)
+            if (excludeProperties != null)
             {
-                Properties = Properties.Except(ExcludeProperties).ToArray();
+                properties = properties.Except(excludeProperties).ToArray();
             }
 
             foreach (Metadata.MetadataColumn col in mt.Columns.Values)
             {
-                if (Properties.Contains(col.Name) && !col.IsIdentity && !col.IsReadOnly)
+                if (properties.Contains(col.Name) && !col.IsIdentity && !col.IsReadOnly)
                 {
                     PropertyInfo prop = instance.GetType().GetProperty(col.Name);
                     if (prop.CanRead && prop.CanWrite)
@@ -105,7 +104,7 @@ namespace TinySql
                 pk.Add(prop.GetValue(instance));
             });
             table.WithMetadata().WherePrimaryKey(pk.ToArray());
-            if (OutputPrimaryKey)
+            if (outputPrimaryKey)
             {
                 return table.Output().PrimaryKey().Builder();
             }
@@ -117,25 +116,25 @@ namespace TinySql
         }
 
 
-        public static SqlBuilder Insert<T>(T instance, string TableName = null, string[] Properties = null, string[] ExcludeProperties = null)
+        public static SqlBuilder Insert<T>(T instance, string tableName = null, string[] properties = null, string[] excludeProperties = null)
         {
             InsertIntoTable table = SqlBuilder.Insert()
-                .Into(TableName ?? instance.GetType().Name);
+                .Into(tableName ?? instance.GetType().Name);
 
-            Metadata.MetadataTable mt = SqlBuilder.DefaultMetadata.FindTable(TableName ?? instance.GetType().Name);
+            Metadata.MetadataTable mt = SqlBuilder.DefaultMetadata.FindTable(tableName ?? instance.GetType().Name);
 
 
-            if (Properties == null)
+            if (properties == null)
             {
-                Properties = instance.GetType().GetProperties().Select(x => x.Name).ToArray();
+                properties = instance.GetType().GetProperties().Select(x => x.Name).ToArray();
             }
-            if (ExcludeProperties != null)
+            if (excludeProperties != null)
             {
-                Properties = Properties.Except(ExcludeProperties).ToArray();
+                properties = properties.Except(excludeProperties).ToArray();
             }
             foreach (Metadata.MetadataColumn col in mt.Columns.Values)
             {
-                if (Properties.Contains(col.Name) && !col.IsIdentity && !col.IsReadOnly)
+                if (properties.Contains(col.Name) && !col.IsIdentity && !col.IsReadOnly)
                 {
                     PropertyInfo prop = instance.GetType().GetProperty(col.Name);
                     if (prop.CanRead && prop.CanWrite)
@@ -149,9 +148,9 @@ namespace TinySql
             return table.Output().PrimaryKey().Builder();
         }
 
-        public static SqlBuilder Update<TModel, TProperty>(this TableHelper<TModel> helper, TModel Instance, Expression<Func<TModel, TProperty>> prop)
+        public static SqlBuilder Update<TModel, TProperty>(this TableHelper<TModel> helper, TModel instance, Expression<Func<TModel, TProperty>> prop)
         {
-            return helper.table.Builder;
+            return helper.Table.Builder;
         }
 
         public static void UpdateEx<TModel, TProperty>(this ModelHelper<TModel> helper, Expression<Func<TModel, TProperty>> prop)
@@ -166,7 +165,7 @@ namespace TinySql
             public TModel Model { get; set; }
             public ModelHelper(TModel model)
             {
-                this.Model = model;
+                Model = model;
             }
         }
 
@@ -174,18 +173,18 @@ namespace TinySql
 
 
 
-        public static SqlBuilder Select<T>(string TableName = null, string[] Properties = null, string[] ExcludeProperties = null, int? Top = null, bool Distinct = false)
+        public static SqlBuilder Select<T>(string tableName = null, string[] properties = null, string[] excludeProperties = null, int? top = null, bool distinct = false)
         {
 
-            return Select(typeof(T), TableName, Properties, ExcludeProperties, Top, Distinct);
+            return Select(typeof(T), tableName, properties, excludeProperties, top, distinct);
         }
 
-        public static T PopulateObject<T>(T instance, DataTable dt, DataRow row, bool AllowPrivateProperties, bool EnforceTypesafety)
+        public static T PopulateObject<T>(T instance, DataTable dt, DataRow row, bool allowPrivateProperties, bool enforceTypesafety)
         {
             foreach (DataColumn col in dt.Columns)
             {
                 BindingFlags flag = BindingFlags.Public;
-                if (AllowPrivateProperties)
+                if (allowPrivateProperties)
                 {
                     flag = flag | BindingFlags.NonPublic;
                 }
@@ -209,7 +208,7 @@ namespace TinySql
                                 field.SetValue(instance, (XmlDocument)row[col]);
                             }
                         }
-                        else if (!EnforceTypesafety || field.FieldType == col.DataType)
+                        else if (!enforceTypesafety || field.FieldType == col.DataType)
                         {
                             if (row.IsNull(col))
                             {
@@ -224,11 +223,6 @@ namespace TinySql
                             }
                         }
                     }
-                    else
-                    {
-                        continue;
-                    }
-
                 }
                 else
                 {
@@ -247,7 +241,7 @@ namespace TinySql
                                 prop.SetValue(instance, (XmlDocument)row[col], null);
                             }
                         }
-                        else if (!EnforceTypesafety || prop.PropertyType == col.DataType)
+                        else if (!enforceTypesafety || prop.PropertyType == col.DataType)
                         {
                             if (row.IsNull(col))
                             {
@@ -329,13 +323,13 @@ namespace TinySql
         }
 
 
-        public static T PopulateObject<T>(DataTable dt, DataRow row, bool AllowPrivateProperties, bool EnforceTypesafety, bool UseDefaultConstructor = true)
+        public static T PopulateObject<T>(DataTable dt, DataRow row, bool allowPrivateProperties, bool enforceTypesafety, bool useDefaultConstructor = true)
         {
             T instance = default(T);
-            if (UseDefaultConstructor)
+            if (useDefaultConstructor)
             {
                 instance = Activator.CreateInstance<T>();
-                return PopulateObject<T>(instance, dt, row, AllowPrivateProperties, EnforceTypesafety);
+                return PopulateObject<T>(instance, dt, row, allowPrivateProperties, enforceTypesafety);
             }
             else
             {

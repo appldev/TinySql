@@ -7,30 +7,30 @@ namespace TinySql
     public static class ResultExtensions
     {
 
-        public static SqlBuilder Select(this RowData row, string ListName)
+        public static SqlBuilder Select(this RowData row, string listName)
         {
-            SqlBuilder builder = row.Metadata.ToSqlBuilder(ListName);
+            SqlBuilder builder = row.Metadata.ToSqlBuilder(listName);
             builder.WhereConditions = row.PrimaryKey(builder);
             return builder;
         }
 
-        public static SqlBuilder Update(this RowData row, bool OnlyChanges = false, bool OutputPrimaryKey = false, string[] OutputFields = null)
+        public static SqlBuilder Update(this RowData row, bool onlyChanges = false, bool outputPrimaryKey = false, string[] outputFields = null)
         {
-            if (OnlyChanges && !row.HasChanges)
+            if (onlyChanges && !row.HasChanges)
             {
                 return null;
             }
             SqlBuilder builder = SqlBuilder.Update();
-            string TableName = row.Table;
-            string Schema = null;
-            if (TableName.IndexOf('.') > 0)
+            string tableName = row.Table;
+            string schema = null;
+            if (tableName.IndexOf('.') > 0)
             {
-                Schema = TableName.Substring(0, TableName.IndexOf('.'));
-                TableName = TableName.Substring(TableName.IndexOf('.') + 1);
+                schema = tableName.Substring(0, tableName.IndexOf('.'));
+                tableName = tableName.Substring(tableName.IndexOf('.') + 1);
             }
-            UpdateTable up = builder.Table(TableName, Schema);
-            Metadata.MetadataTable mt = row.Metadata;
-            if (OnlyChanges)
+            UpdateTable up = builder.Table(tableName, schema);
+            MetadataTable mt = row.Metadata;
+            if (onlyChanges)
             {
                 foreach (string key in row.ChangedValues.Keys)
                 {
@@ -59,7 +59,7 @@ namespace TinySql
                 }
             }
 
-            if (OutputPrimaryKey)
+            if (outputPrimaryKey)
             {
                 TableParameterField tpf = up.Output();
                 foreach (MetadataColumn key in mt.PrimaryKey.Columns)
@@ -67,10 +67,10 @@ namespace TinySql
                     SqlStatementExtensions.Column(tpf, key.Name, key.SqlDataType, key.Length, key.Precision, key.Scale);
                 }
             }
-            if (OutputFields != null && OutputFields.Length > 0)
+            if (outputFields != null && outputFields.Length > 0)
             {
                 TableParameterField tpf = up.Output();
-                foreach (string s in OutputFields)
+                foreach (string s in outputFields)
                 {
                     MetadataColumn c = mt[s];
                     SqlStatementExtensions.Column(tpf, s, c.SqlDataType, c.Length, c.Precision, c.Scale);
@@ -81,30 +81,30 @@ namespace TinySql
 
         }
 
-        public static SqlBuilder Update(this SqlBuilder builder, RowData row, string[] Output = null)
+        public static SqlBuilder Update(this SqlBuilder builder, RowData row, string[] output = null)
         {
             if (!row.HasChanges)
             {
                 return builder;
             }
-            string TableName = row.Table;
-            string Schema = null;
-            if (TableName.IndexOf('.') > 0)
+            string tableName = row.Table;
+            string schema = null;
+            if (tableName.IndexOf('.') > 0)
             {
-                Schema = TableName.Substring(0, TableName.IndexOf('.'));
-                TableName = TableName.Substring(TableName.IndexOf('.') + 1);
+                schema = tableName.Substring(0, tableName.IndexOf('.'));
+                tableName = tableName.Substring(tableName.IndexOf('.') + 1);
             }
-            UpdateTable up = builder.Table(TableName, Schema);
-            Metadata.MetadataTable mt = row.Metadata;
+            UpdateTable up = builder.Table(tableName, schema);
+            MetadataTable mt = row.Metadata;
             foreach (string key in row.ChangedValues.Keys)
             {
                 MetadataColumn c = mt[key];
                 SqlStatementExtensions.Set(up, key, row.ChangedValues[key], c.SqlDataType, c.DataType, c.Length, c.Scale);
             }
-            if (Output != null && Output.Length > 0)
+            if (output != null && output.Length > 0)
             {
                 TableParameterField tpf = up.Output();
-                foreach (string s in Output)
+                foreach (string s in output)
                 {
                     MetadataColumn c = mt[s];
                     SqlStatementExtensions.Column(tpf, s, c.SqlDataType, c.Length, c.Scale);

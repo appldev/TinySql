@@ -1,11 +1,10 @@
 using System;
-using System.Collections.Generic;
 using TinySql.Attributes;
 
 namespace TinySql.Classes
 {	public partial class Organisation
 {
-		[PK]
+		[Pk]
 		public Decimal  OrganisationsID { get; set; }
 
 		public String  Adresse1 { get; set; }
@@ -22,7 +21,7 @@ namespace TinySql.Classes
 
 		public String  Email { get; set; }
 
-		[FK("Organisation","OrganisationsID","dbo","Organisation_Organisation_FaderOrganisationsID")]
+		[Fk("Organisation","OrganisationsID","dbo","Organisation_Organisation_FaderOrganisationsID")]
 		public Nullable<Decimal>  FaderOrganisationsID { get; set; }
 
 		public String  Fax { get; set; }

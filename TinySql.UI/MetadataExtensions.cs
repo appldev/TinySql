@@ -1,12 +1,4 @@
-﻿using System;
-using System.Collections.Concurrent;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using TinySql.Metadata;
-
-namespace TinySql.UI
+﻿namespace TinySql.UI
 {
     public static class StringMapExtensions
     {

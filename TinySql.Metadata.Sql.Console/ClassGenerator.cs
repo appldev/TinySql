@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using TinySql;
 using System.IO;
 
 namespace TinySql.Metadata.Sql.CommandLine

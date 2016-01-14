@@ -1,11 +1,10 @@
 using System;
-using System.Collections.Generic;
 using TinySql.Attributes;
 
 namespace TinySql.Classes
 {	public partial class Region
 {
-		[PK]
+		[Pk]
 		public Decimal  RegionID { get; set; }
 
 		public Decimal  CreatedBy { get; set; }

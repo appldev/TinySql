@@ -1,7 +1,6 @@
 ﻿using System;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using TinySql;
-using TinySql.Metadata;
 using System.Data;
 using System.Linq;
 using System.Collections.Generic;

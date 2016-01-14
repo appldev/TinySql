@@ -1,13 +1,9 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Data;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace TinySql.UI
 {
-    public enum ListTypes : int
+    public enum ListTypes
     {
         Primary = 1,
         Secondary = 2,

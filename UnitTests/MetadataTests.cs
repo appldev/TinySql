@@ -1,8 +1,6 @@
 ﻿using System;
 using System.Linq;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using System.Collections.Generic;
-using Microsoft.CSharp;
 using TinySql;
 using TinySql.Metadata;
 using System.IO;
@@ -84,7 +82,7 @@ namespace UnitTests
             Console.WriteLine(string.Format("Results serialized to {0} in {1}ms", file, StopWatch.Stop(g, StopWatch.WatchTypes.Milliseconds)));
             
             FileInfo fi = new FileInfo(file);
-            Console.WriteLine("The File is {0:0.00}MB in size", (double)fi.Length / (double)(1024 * 1024));
+            Console.WriteLine("The File is {0:0.00}MB in size", fi.Length / (double)(1024 * 1024));
             
             g = StopWatch.Start();
             builder = TinySql.Serialization.SerializationExtensions.FromJson<SqlBuilder>(File.ReadAllText(file));
@@ -139,9 +137,9 @@ namespace UnitTests
             Console.WriteLine("Metadata read from file '{0}' in {1}ms", FileName2, StopWatch.Stop(g, StopWatch.WatchTypes.Milliseconds));
 
             FileInfo fi = new FileInfo(FileName);
-            Console.WriteLine("The File {1} is {0:0.00}MB in size", (double)fi.Length / (double)(1024 * 1024),FileName);
+            Console.WriteLine("The File {1} is {0:0.00}MB in size", fi.Length / (double)(1024 * 1024),FileName);
             fi = new FileInfo(FileName2);
-            Console.WriteLine("The File {1} is {0:0.00}MB in size", (double)fi.Length / (double)(1024 * 1024), FileName2);
+            Console.WriteLine("The File {1} is {0:0.00}MB in size", fi.Length / (double)(1024 * 1024), FileName2);
 
             File.Delete(FileName);
             File.Delete(FileName2);

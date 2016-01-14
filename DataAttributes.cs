@@ -3,51 +3,51 @@
 namespace TinySql.Attributes
 {
     [AttributeUsage(AttributeTargets.Field | AttributeTargets.Property, Inherited = false, AllowMultiple = false)]
-    public sealed class PK : Attribute
+    public sealed class Pk : Attribute
     {
-        public PK()
+        public Pk()
         {
 
         }
     }
 
     [AttributeUsage(AttributeTargets.Field | AttributeTargets.Property, Inherited = false, AllowMultiple = false)]
-    public sealed class FK : Attribute
+    public sealed class Fk : Attribute
     {
-        readonly string toTable;
-        readonly string toSchema;
-        readonly string foreignKeyName;
-        readonly string toField;
+        readonly string _toTable;
+        readonly string _toSchema;
+        readonly string _foreignKeyName;
+        readonly string _toField;
 
-        public FK(string toTable, string toField = null, string toSchema = null, string foreignKeyName = null)
+        public Fk(string toTable, string toField = null, string toSchema = null, string foreignKeyName = null)
         {
-            this.toTable = toTable;
-            this.toSchema = toSchema;
-            this.foreignKeyName = foreignKeyName;
-            this.toField = null;
+            _toTable = toTable;
+            _toSchema = toSchema;
+            _foreignKeyName = foreignKeyName;
+            _toField = null;
         }
 
         public string ToField
         {
-            get { return toField; }
+            get { return _toField; }
         }
         public string ToTable
         {
             get
             {
-                return toTable;
+                return _toTable;
             }
         }
         public string ToSchema
         {
-            get { return toSchema; }
+            get { return _toSchema; }
         }
 
         public string ForeignKeyName
         {
             get
             {
-                return foreignKeyName;
+                return _foreignKeyName;
             }
         }
     }

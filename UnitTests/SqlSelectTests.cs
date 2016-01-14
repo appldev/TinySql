@@ -145,7 +145,7 @@ namespace UnitTests
             ResultTable deserialized = SerializationExtensions.FromJson<ResultTable>(File.ReadAllText(file));
             Console.WriteLine(StopWatch.Stop(g, StopWatch.WatchTypes.Milliseconds, "Results deserialized in {0}ms"));
             FileInfo fi = new FileInfo(file);
-            Console.WriteLine("The File is {0:0.00}MB in size", (double)fi.Length / (double)(1024 * 1024));
+            Console.WriteLine("The File is {0:0.00}MB in size", fi.Length / (double)(1024 * 1024));
             fi.Delete();
             Assert.IsFalse(File.Exists(file));
             Assert.IsTrue(result.Count == deserialized.Count);

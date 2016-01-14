@@ -1,9 +1,6 @@
 ﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Xml;
 using TinySql.Attributes;
 using TinySql.Classes;
 
@@ -48,7 +45,7 @@ namespace UnitTests
 
         public decimal AccountTypeID{ get; set; }
 
-        [FK("State", toSchema: "")]
+        [Fk("State", toSchema: "")]
         public decimal StateID { get; set; }
 
         public string State { get; set; }

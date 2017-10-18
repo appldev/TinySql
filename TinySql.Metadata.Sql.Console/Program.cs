@@ -167,7 +167,6 @@ namespace TinySql.Metadata.Sql.CommandLine
         private static string Clean(string s)
         {
             return s.TrimStart('"').TrimEnd('"');
-
         }
 
         private static string[] SplitCommand(string cmd)
